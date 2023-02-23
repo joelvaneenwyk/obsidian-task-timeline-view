@@ -1,10 +1,8 @@
 import type { Moment } from 'moment';
 import { Link, STask } from '../../dataview-util/markdown';
 import { getFileTitle } from '../../dataview-util/dataview';
-import { FileView, Pos, Tasks } from 'obsidian'
 import moment from 'moment';
 import { momentToRegex } from './utils/utils';
-import { DateTime } from 'luxon';
 
 /**
  * When sorting, make sure low always comes after none. This way any tasks with low will be below any exiting
@@ -173,26 +171,150 @@ export interface TaskDataModel extends STask {
 
 export namespace TaskMapable {
 
-    export function filterDate(date: Moment){
+    export function filterDate(date: Moment) {
         return filterByDateTime(date, "date");
     }
 
-    export function filterYear(date: Moment){
+    export function filterYear(date: Moment) {
         return filterByDateTime(date, "year");
     }
 
-    function filterByDateTime(date: Moment, by: moment.unitOfTime.StartOf){
+    function filterByDateTime(date: Moment, by: moment.unitOfTime.StartOf) {
         return (item: TaskDataModel) => {
-            if(item.due)return date.isSame(item.due, by);
-            if(item.scheduled)return date.isSame(item.scheduled, by);
-            if(item.created)return date.isSame(item.created, by);
-            if(item.completion)return date.isSame(item.completion, by);
-            if(item.start)return date.isSame(item.start, by);
+            if (item.due) return date.isSame(item.due, by);
+            if (item.scheduled) return date.isSame(item.scheduled, by);
+            if (item.created) return date.isSame(item.created, by);
+            if (item.completion) return date.isSame(item.completion, by);
+            if (item.start) return date.isSame(item.start, by);
             return false;
         }
     }
 
+    /**
+     * This function is taken from TasksPlugin, it is originally named fromLine.
+     * We use this function to extract information that matches the TasksPlugin format.
+     * @param item 
+     * @returns 
+     */
     export function tasksPluginTaskParser(item: TaskDataModel) {
+        // Check the line to see if it is a markdown task.
+        var description = item.visual || item.text;
+        // Keep matching and removing special strings from the end of the
+        // description in any order. The loop should only run once if the
+        // strings are in the expected order after the description.
+        let matched: boolean;
+        let priority: Priority = Priority.None;
+        let startDate: Moment | undefined = undefined;
+        let scheduledDate: Moment | undefined = undefined;
+        let scheduledDateIsInferred = false;
+        let dueDate: Moment | undefined = undefined;
+        let doneDate: Moment | undefined = undefined;
+        let recurrenceRule: string = '';
+        let recurrence: string | null = null;
+        // Tags that are removed from the end while parsing, but we want to add them back for being part of the description.
+        // In the original task description they are possibly mixed with other components
+        // (e.g. #tag1 <due date> #tag2), they do not have to all trail all task components,
+        // but eventually we want to paste them back to the task description at the end
+        let trailingTags = '';
+        // Add a "max runs" failsafe to never end in an endless loop:
+        const maxRuns = 20;
+        let runs = 0;
+        do {
+            matched = false;
+            const priorityMatch = description.match(TaskRegularExpressions.priorityRegex);
+            if (priorityMatch !== null) {
+                switch (priorityMatch[1]) {
+                    case prioritySymbols.Low:
+                        priority = Priority.Low;
+                        break;
+                    case prioritySymbols.Medium:
+                        priority = Priority.Medium;
+                        break;
+                    case prioritySymbols.High:
+                        priority = Priority.High;
+                        break;
+                }
+
+                description = description.replace(TaskRegularExpressions.priorityRegex, '').trim();
+                matched = true;
+            }
+
+            const doneDateMatch = description.match(TaskRegularExpressions.doneDateRegex);
+            if (doneDateMatch !== null) {
+                doneDate = window.moment(doneDateMatch[1], TaskRegularExpressions.dateFormat);
+                description = description.replace(TaskRegularExpressions.doneDateRegex, '').trim();
+                matched = true;
+            }
+
+            const dueDateMatch = description.match(TaskRegularExpressions.dueDateRegex);
+            if (dueDateMatch !== null) {
+                dueDate = window.moment(dueDateMatch[1], TaskRegularExpressions.dateFormat);
+                description = description.replace(TaskRegularExpressions.dueDateRegex, '').trim();
+                matched = true;
+            }
+
+            const scheduledDateMatch = description.match(TaskRegularExpressions.scheduledDateRegex);
+            if (scheduledDateMatch !== null) {
+                scheduledDate = window.moment(scheduledDateMatch[1], TaskRegularExpressions.dateFormat);
+                description = description.replace(TaskRegularExpressions.scheduledDateRegex, '').trim();
+                matched = true;
+            }
+
+            const startDateMatch = description.match(TaskRegularExpressions.startDateRegex);
+            if (startDateMatch !== null) {
+                startDate = window.moment(startDateMatch[1], TaskRegularExpressions.dateFormat);
+                description = description.replace(TaskRegularExpressions.startDateRegex, '').trim();
+                matched = true;
+            }
+
+            const recurrenceMatch = description.match(TaskRegularExpressions.recurrenceRegex);
+            if (recurrenceMatch !== null) {
+                // Save the recurrence rule, but *do not parse it yet*.
+                // Creating the Recurrence object requires a reference date (e.g. a due date),
+                // and it might appear in the next (earlier in the line) tokens to parse
+                recurrenceRule = recurrenceMatch[1].trim();
+                description = description.replace(TaskRegularExpressions.recurrenceRegex, '').trim();
+                matched = true;
+            }
+
+            // Match tags from the end to allow users to mix the various task components with
+            // tags. These tags will be added back to the description below
+            const tagsMatch = description.match(TaskRegularExpressions.hashTagsFromEnd);
+            if (tagsMatch != null) {
+                description = description.replace(TaskRegularExpressions.hashTagsFromEnd, '').trim();
+                matched = true;
+                const tagName = tagsMatch[0].trim();
+                // Adding to the left because the matching is done right-to-left
+                trailingTags = trailingTags.length > 0 ? [tagName, trailingTags].join(' ') : tagName;
+            }
+
+            runs++;
+        } while (matched && runs <= maxRuns);
+
+
+        // Add back any trailing tags to the description. We removed them so we can parse the rest of the
+        // components but now we want them back.
+        // The goal is for a task of them form 'Do something #tag1 (due) tomorrow #tag2 (start) today'
+        // to actually have the description 'Do something #tag1 #tag2'
+        if (trailingTags.length > 0) description += ' ' + trailingTags;
+
+        let isTasksTask = [startDate, scheduledDate, dueDate, doneDate].some(d => !!d);
+
+
+        const priorityLabel = priority === Priority.High ? "High" :
+            priority === Priority.Low ? "Low" : priority === Priority.Medium ? "Medium" : "No" + " priority";
+
+        item.visual = description;
+        item.priority = priority;
+        item.priorityLabel = priorityLabel;
+        item.recurrence = recurrenceRule;
+        item.isTasksTask = isTasksTask;
+        item.due = dueDate;
+        item.scheduled = scheduledDate;
+        item.completion = doneDate;
+        item.start = startDate;
+        item.checked = description.replace(' ', '').length !== 0;
+
         return item;
     }
 
@@ -291,7 +413,7 @@ export namespace TaskMapable {
         if (!item.due && !item.scheduled &&
             !item.start && !item.completion && item.dates.size === 0) {
             item.status = TaskStatus.unplanned;
-            if(item.completed)item.status = TaskStatus.done;
+            if (item.completed) item.status = TaskStatus.done;
             return item;
         }
 
