@@ -1,16 +1,16 @@
-import './ui/view.css'
-import * as icons from './ui/icons'
+import './components/view.css'
+import * as icons from './asserts/icons'
 import {
     doneDateSymbol, dueDateSymbol, innerDateFormat, prioritySymbols,
     recurrenceSymbol, scheduledDateSymbol, startDateSymbol, TaskDataModel,
     TaskRegularExpressions, TaskStatus
-} from './tasks'
-import { Options } from './options'
-import { TaskMapable } from "./tasks";
+} from '../utils/tasks'
+import { Options } from '../utils/options'
+import { TaskMapable } from "../utils/tasks";
 import moment, { Moment } from 'moment'
 import * as React from "react";
 import ReactDOM from 'react-dom/client'
-import { getFileTitle } from '../../dataview-util/dataview';
+import { getFileTitle } from '../../../dataview-util/dataview';
 import ReactDOMServer from 'react-dom/server';
 
 const DEFAULT_OPTIONS: Options = {

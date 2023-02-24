@@ -1,7 +1,7 @@
 import * as input from '../_input'
-import { Options } from './options'
-import { TaskDataModel } from './tasks'
-import { View } from './view'
+import { Options } from './utils/options'
+import { TaskDataModel } from './utils/tasks'
+import { View } from './components/view'
 
 const option : Options = {
     inbox: undefined,

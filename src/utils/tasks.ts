@@ -1,8 +1,8 @@
 import type { Moment } from 'moment';
-import { Link, STask } from '../../dataview-util/markdown';
-import { getFileTitle } from '../../dataview-util/dataview';
+import { Link, STask } from '../../../dataview-util/markdown';
+import { getFileTitle } from '../../../dataview-util/dataview';
 import moment from 'moment';
-import { momentToRegex } from './utils/utils';
+import { momentToRegex } from './utils';
 
 /**
  * When sorting, make sure low always comes after none. This way any tasks with low will be below any exiting
