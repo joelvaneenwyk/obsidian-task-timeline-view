@@ -32,7 +32,7 @@ type YearHeaderProps = Readonly<typeof defaultYearHeaderProps>;
 class YearHeader extends React.Component<YearHeaderProps> {
     render(): React.ReactNode {
         return (
-            <div className={"year" + (this.props.year.isSame(moment(), 'year') && " current")}
+            <div className={"year" + (this.props.year.isSame(moment(), 'year') ? " current" : "")}
                 data-types={this.props.dataTypes.join(" ")}>
                 {this.props.year.format("YYYY")}
             </div>

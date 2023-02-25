@@ -3,7 +3,7 @@ import * as React from 'react';
 import { getFileTitle } from '../../../dataview-util/dataview';
 import { doneDateSymbol, dueDateSymbol, innerDateFormat, prioritySymbols, recurrenceSymbol, scheduledDateSymbol, startDateSymbol, TaskDataModel } from '../utils/tasks';
 import * as Icons from './asserts/icons';
-import { CreateNewTaskContext, TodayFocusEventHandlers, UserOptionContext } from './context';
+import { CreateNewTaskContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
 import { TaskItemView } from './taskitemview';
 
 const defaultDateProps = {
@@ -17,12 +17,13 @@ export class DateView extends React.Component<DateViewProps> {
         const thisYear = this.props.date.format("YYYY");
         const thisDate = this.props.date.format(innerDateFormat);
         const taskList = this.props.tasksOfToday;
+        const isToday = this.props.date.isSame(moment(), 'date');
         return (
-            <div className='details' data-year={thisYear} data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
+            <div className={'details' + (isToday ? ' today' : '')} data-year={thisYear} data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
                 <DateHeader thisDate={thisDate} />
-                {this.props.date.isSame(moment(), 'date') ?
-                    <TodayContent tasksOfToday={this.props.tasksOfToday} /> :
-                    <NormalDateContent tasksOfToday={this.props.tasksOfToday} date={this.props.date} />}
+                {isToday ?
+                    <TodayContent tasksOfToday={taskList} /> :
+                    <NormalDateContent tasksOfToday={taskList} date={this.props.date} />}
             </div>)
     }
 }
@@ -79,11 +80,15 @@ const defaultQuickEntryProps = {
 };
 
 type QuickEntryProps = Readonly<typeof defaultQuickEntryProps>;
+const defaultQuickEntryState = {
+    selectedFile: "" as string,
+};
+type QuickEntryState = typeof defaultQuickEntryState;
 
-class QuickEntry extends React.Component<QuickEntryProps> {
+class QuickEntry extends React.Component<QuickEntryProps, QuickEntryState> {
     private newTaskInput;
+    private fileSecect;
     private okButton;
-    private fileSelect;
     private quickEntryPanel;
     constructor(props: QuickEntryProps) {
         super(props);
@@ -95,12 +100,20 @@ class QuickEntry extends React.Component<QuickEntryProps> {
         this.onQuickEntryPanelFocus = this.onQuickEntryPanelFocus.bind(this);
 
         this.newTaskInput = React.createRef<HTMLInputElement>();
+        this.fileSecect = React.createRef<HTMLSelectElement>();
         this.okButton = React.createRef<HTMLButtonElement>();
-        this.fileSelect = React.createRef<HTMLSelectElement>();
         this.quickEntryPanel = React.createRef<HTMLDivElement>();
+
+        this.state = {
+            selectedFile: "",
+        }
     }
 
     onQuickEntryFileSelectChange() {
+        if(!this.fileSecect.current)return;
+        this.setState({
+            selectedFile: this.fileSecect.current?.value,
+        })
         this.newTaskInput.current?.focus();
     }
 
@@ -168,17 +181,17 @@ class QuickEntry extends React.Component<QuickEntryProps> {
                 <div className='left'>
                     <UserOptionContext.Consumer>{options => {
                         return (
-                            <select className='fileSelect' ref={this.fileSelect} aria-label='Select a note to add a new task to'
-                                onChange={this.onQuickEntryFileSelectChange} value={options.select}>
-                                {options.taskFiles.map((f, i) => {
+                            <select className='fileSelect' ref={this.fileSecect} aria-label='Select a note to add a new task to'
+                                onChange={this.onQuickEntryFileSelectChange} value={this.state.selectedFile}>
+                                {[...options.taskFiles].map((f, i) => {
                                     const secondParentFolder =
-                                        f.split("/")[f.split("/").length - 3] == null ? "" : "… / ";
+                                        !(f.split("/")[f.split("/").length - 3]) ? "" : "… / ";
                                     const parentFolder =
-                                        f.split("/")[f.split("/").length - 2] == null ? "" :
-                                            secondParentFolder + "📂&nbsp;" + f.split("/")[f.split("/").length - 2] + " / ";
-                                    const filePath = parentFolder + "📄&nbsp;" + getFileTitle(f);
+                                        !(f.split("/")[f.split("/").length - 2]) ? "" :
+                                            (secondParentFolder + "📂 " + f.split("/")[f.split("/").length - 2] + " / ");
+                                    const filePath = parentFolder + "📄 " + getFileTitle(f);
                                     return (
-                                        <option value={f} title={f} key={i}>
+                                        <option style={{whiteSpace: "nowrap"}} value={f} title={f} key={i}>
                                             {filePath}
                                         </option>);
                                 })}
@@ -193,7 +206,7 @@ class QuickEntry extends React.Component<QuickEntryProps> {
                     <CreateNewTaskContext.Consumer>{callback => (
                         <button className='ok' ref={this.okButton} aria-label='Append new task to selected note'
                             onClick={() => {
-                                const filePath = this.fileSelect.current?.value;
+                                const filePath = this.state.selectedFile;
                                 const newTask = this.newTaskInput.current?.value;
                                 if (!newTask || !filePath) return;
                                 if (newTask.length > 1) {
@@ -214,11 +227,11 @@ class QuickEntry extends React.Component<QuickEntryProps> {
 class TodayFocus extends React.Component {
     render(): React.ReactNode {
         return (
-            <TodayFocusEventHandlers.Consumer>{callback => (
+            <TodayFocusEventHandlersContext.Consumer>{callback => (
                 <div className='todayHeader' aria-label='Focus today' onClick={callback.handleTodayFocusClick}>
                     Today
                 </div>)}
-            </TodayFocusEventHandlers.Consumer>
+            </TodayFocusEventHandlersContext.Consumer>
         );
     }
 }
@@ -234,7 +247,7 @@ class Counters extends React.Component<CountersProps> {
             <UserOptionContext.Consumer>{options => (
                 < div className='counters' >
                     {options.counters.map((c, i) =>
-                        <CounterItem onClick={c.onClick} cnt={c.cnt} label={c.label} ariaLabel={c.ariaLabel} key={i} />
+                        <CounterItem onClick={c.onClick} cnt={c.cnt} id={c.id} label={c.label} ariaLabel={c.ariaLabel} key={i} />
                     )}
                 </div>
             )}
@@ -246,6 +259,7 @@ class Counters extends React.Component<CountersProps> {
 const defaultCounterProps = {
     onClick: () => { },
     cnt: 0,
+    id: "",
     label: "",
     ariaLabel: ""
 }
@@ -254,7 +268,7 @@ export type CounterProps = Readonly<typeof defaultCounterProps>;
 
 class CounterItem extends React.Component<CounterProps> {
     render(): React.ReactNode {
-        return (<div className='counter' id={this.props.label} aria-label={this.props.ariaLabel} onClick={this.props.onClick}>
+        return (<div className='counter' id={this.props.id} aria-label={this.props.ariaLabel} onClick={this.props.onClick}>
             <div className='count'>{this.props.cnt}</div>
             <div className='label'>{this.props.label}</div>
         </div>

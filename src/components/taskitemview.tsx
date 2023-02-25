@@ -1,9 +1,9 @@
 import moment, { Moment } from "moment";
 import * as React from "react";
 import { getFileTitle } from "../../../dataview-util/dataview";
-import { innerDateFormat, recurrenceSymbol, TaskDataModel, TaskRegularExpressions } from "../utils/tasks";
+import { innerDateFormat, recurrenceSymbol, TaskDataModel, TaskRegularExpressions, TaskStatus } from "../utils/tasks";
 import * as Icons from './asserts/icons';
-import { TaskItemEventHandlers } from "./context";
+import { TaskItemEventHandlersContext } from "./context";
 
 const getRelative = (someDate: Moment) => {
     if (moment().diff(someDate, 'days') >= 1 || moment().diff(someDate, 'days') <= -1) {
@@ -33,60 +33,60 @@ export class TaskItemView extends React.Component<TaskItemProps> {
         const ariaLabel = getFileTitle(item.path);
         const statusIcon = Icons.getTaskStatusIcon(status);
         return (
-            <TaskItemEventHandlers.Consumer>{callbacks => {
+            <TaskItemEventHandlersContext.Consumer>{callbacks => {
                 const openTaskFile = () => {
-                    callbacks.handleOpenFile(item.path, item.position.start.offset, item.position.end.offset);
+                    callbacks.handleOpenFile(item.path, item.position);
                 };
                 const onCompleteTask = () => {
-                    callbacks.handleCompleteTask(item.path, item.position.start.offset, item.position.end.offset);
+                    callbacks.handleCompleteTask(item.path, item.position);
                 }
                 return (<div data-line={line} data-col={col} data-link={link} data-dailynote={isDailyNote}
-                    className={'task' + status && ` ${status}`}
+                    className={`task ${status}`}
                     style={{ "--task-color": color || "var(--text-muted)" } as React.CSSProperties} aria-label={ariaLabel}>
                     <StripWithIcon status={status} onClick={onCompleteTask} />
-                    <div className='lines'>
-                        <a className='internal-link' href={link}>
+                    <div className='lines' onClick={openTaskFile}>
+                        <a className='internal-link' href={link} target="_blank" rel="noopener">
                             <div className='content'>{display}</div>
                         </a>
                         <div className='line info'>
                             {item.created &&
-                                <DateStatusBadge onClick={openTaskFile}
-                                    className='relative' ariaLabel={status + ": " + item.created.format(innerDateFormat)}
-                                    label={getRelative(item.created)} icon={statusIcon} />}
+                                <DateStatusBadge //onClick={openTaskFile}
+                                    className='relative' ariaLabel={"create at " + item.created.format(innerDateFormat)}
+                                    label={getRelative(item.created)} icon={Icons.taskIcon} />}
                             {item.start &&
-                                <DateStatusBadge onClick={openTaskFile}
-                                    className='relative' ariaLabel={status + ": " + item.start.format(innerDateFormat)}
-                                    label={getRelative(item.start)} icon={statusIcon} />}
+                                <DateStatusBadge //onClick={openTaskFile}
+                                    className='relative' ariaLabel={"start at " + item.start.format(innerDateFormat)}
+                                    label={getRelative(item.start)} icon={Icons.startIcon} />}
                             {item.scheduled &&
-                                <DateStatusBadge onClick={openTaskFile}
-                                    className='relative' ariaLabel={status + ": " + item.scheduled.format(innerDateFormat)}
-                                    label={getRelative(item.scheduled)} icon={statusIcon} />}
+                                <DateStatusBadge //onClick={openTaskFile}
+                                    className='relative' ariaLabel={"scheduled to " + item.scheduled.format(innerDateFormat)}
+                                    label={getRelative(item.scheduled)} icon={Icons.scheduledIcon} />}
                             {item.due &&
-                                <DateStatusBadge onClick={openTaskFile}
-                                    className='relative' ariaLabel={status + ": " + item.due.format(innerDateFormat)}
-                                    label={getRelative(item.due)} icon={statusIcon} />}
+                                <DateStatusBadge //onClick={openTaskFile}
+                                    className='relative' ariaLabel={"due at " + item.due.format(innerDateFormat)}
+                                    label={getRelative(item.due)} icon={Icons.dueIcon} />}
                             {item.completion &&
-                                <DateStatusBadge onClick={openTaskFile}
-                                    className='relative' ariaLabel={status + ": " + item.completion.format(innerDateFormat)}
-                                    label={getRelative(item.completion)} icon={statusIcon} />}
+                                <DateStatusBadge //onClick={openTaskFile}
+                                    className='relative' ariaLabel={"complete at " + item.completion.format(innerDateFormat)}
+                                    label={getRelative(item.completion)} icon={Icons.doneIcon} />}
 
                             {item.recurrence &&
-                                <DateStatusBadge onClick={openTaskFile}
-                                    className='repeat' ariaLabel=''
+                                <DateStatusBadge //onClick={openTaskFile}
+                                    className='repeat' ariaLabel={'recurrent: ' + item.recurrence.replace(recurrenceSymbol, '')}
                                     label={item.recurrence.replace(recurrenceSymbol, '')} icon={Icons.repeatIcon} />}
 
                             {item.priorityLabel &&
-                                <DateStatusBadge onClick={openTaskFile}
-                                    className='priority' ariaLabel=''
+                                <DateStatusBadge //onClick={openTaskFile}
+                                    className='priority' ariaLabel={'priority: ' + item.priorityLabel}
                                     label={item.priorityLabel} icon={Icons.priorityIcon} />}
                             <FileBadge filePath={item.path} subPath={item.section.subpath || ""} />
 
-                            {item.tags.map((t, i) => <TagBadge tag={t} key={i}/>)}
+                            {item.tags.map((t, i) => <TagBadge tag={t} key={i} />)}
                         </div>
                     </div>
                 </div>)
             }}
-            </TaskItemEventHandlers.Consumer>)
+            </TaskItemEventHandlersContext.Consumer>)
     }
 }
 
@@ -110,7 +110,7 @@ class StripWithIcon extends React.Component<StripWithIconProps> {
 }
 
 const defaultTagBadgeProps = {
-    tag: ""
+    tag: "",
 };
 
 type TagBadgeProps = Readonly<typeof defaultTagBadgeProps>;
@@ -126,22 +126,27 @@ class TagBadge extends React.Component<TagBadgeProps> {
             style = {
                 '--tag-color': `#${hexColorMatch[1]}`,
                 '--tag-background': `#${hexColorMatch[1]}1a`,
+                'zIndex': 9999,
             };
             tagText = hexColorMatch[2];
         } else {
             style = {
                 '--tag-color': 'var(--text-muted)',
+                'zIndex': 9999,
             };
         };
         return (
-            <TaskItemEventHandlers.Consumer>{
-                callbacks => (
-                    <a href={tag} className={'tag'} style={style} aria-label={tag}
-                        onClick={() => { callbacks.handleTagClick(this.props.tag) }}>
-                        <div className='icon'>{Icons.tagIcon}</div>
-                        <div className='label'>{tagText}</div>
-                    </a>)}
-            </TaskItemEventHandlers.Consumer>);
+            <TaskItemEventHandlersContext.Consumer>{callbacks => (
+                <a href={tag} className={'tag'} target='_blank' rel='noopener' style={style} aria-label={tag}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        callbacks.handleTagClick(tag);
+                    }}>
+                    <div className='icon'>{Icons.tagIcon}</div>
+                    <div className='label'>{tagText}</div>
+                </a>)}
+            </TaskItemEventHandlersContext.Consumer>
+        );
     }
 }
 
@@ -170,7 +175,7 @@ const defaultBadgeProps = {
     ariaLabel: "",
     label: "",
     icon: Icons.taskIcon,
-    onClick: () => { },
+    //onClick: () => { },
 }
 
 type BadgeProps = Readonly<typeof defaultBadgeProps>;
@@ -183,7 +188,7 @@ class DateStatusBadge extends React.Component<BadgeProps> {
         const label = this.props.label;
         const icon = this.props.icon;
         return (
-            <div className={type} aria-label={aria_label} onClick={this.props.onClick}>
+            <div className={type} aria-label={aria_label} /*onClick={this.props.onClick}*/>
                 <div className='icon'>{icon}</div>
                 <div className='label'>{label}</div>
             </div>

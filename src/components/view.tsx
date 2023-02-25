@@ -5,29 +5,13 @@ import {
     recurrenceSymbol, scheduledDateSymbol, startDateSymbol, TaskDataModel,
     TaskRegularExpressions, TaskStatus
 } from '../utils/tasks'
-import { Options } from '../utils/options'
+import { Options, TimelineSettings } from '../utils/options'
 import { TaskMapable } from "../utils/tasks";
 import moment, { Moment } from 'moment'
 import * as React from "react";
 import ReactDOM from 'react-dom/client'
 import { getFileTitle } from '../../../dataview-util/dataview';
 import ReactDOMServer from 'react-dom/server';
-
-const DEFAULT_OPTIONS: Options = {
-    inbox: undefined,
-    select: undefined,
-    taskOrder: ["overdue", "due", "scheduled", "start", "process", "unplanned", "done", "cancelled"],
-    taskFiles: [],
-    globalTaskFilter: [],
-    dailyNoteFolder: "",
-    dailyNoteFormat: "YYYY-MM-DD",
-    done: false,
-    sort: (t1: TaskDataModel, t2: TaskDataModel) => { return t1.order - t2.order; },
-    css: undefined,
-    forward: false,
-    dateFormat: "ddd, MMM D",
-    options: [],
-}
 
 export class View {
     private options: Options;
@@ -46,13 +30,13 @@ export class View {
     ) {
         this.rootNode = ReactDOM.createRoot(container);
 
-        this.options = options ? options : DEFAULT_OPTIONS;
-        if (this.options.dailyNoteFormat.match(/[|\\YMDWwd.,-: \[\]]/g)?.length !== this.options.dailyNoteFormat.length) {
+        this.options = options ? options : new TimelineSettings();
+        if (this.options.dailyNoteFormat?.match(/[|\\YMDWwd.,-: \[\]]/g)?.length !== this.options.dailyNoteFormat?.length) {
             // Error handler here
             return;
         }
 
-        this.options.taskOrder.forEach((value: string, index: number) => {
+        [...this.options.taskOrder].forEach((value: string, index: number) => {
             this.orderMap.set(value, index);
         });
 
@@ -113,9 +97,7 @@ export class View {
 
     _renderTodayComponent(todoCnt: number, overdueCnt: number, unplannedCnt: number) {
         const currentDailyNote = this.options.dailyNoteFolder + moment().format(this.options.dailyNoteFormat) + ".md";
-        this.options.taskFiles.push(currentDailyNote);
-        if (!!(this.options.inbox)) this.options.taskFiles.push(this.options.inbox);
-        this.options.taskFiles = [...new Set(this.options.taskFiles)].sort();
+        this.options.taskFiles.add(currentDailyNote);
 
         return (
             <div>
@@ -140,7 +122,7 @@ export class View {
                     <div className='left'>
                         <select className='fileSelect' aria-label='Select a note to add a new task to'
                             onChange={this.quickEntryFileSelectChangeEvent()} value={this.options.select}>
-                            {this.options.taskFiles.map(f => {
+                            {[...this.options.taskFiles].map(f => {
                                 const secondParentFolder =
                                     f.split("/")[f.split("/").length - 3] == null ? "" : "… / ";
                                 const parentFolder =
@@ -403,7 +385,7 @@ export class View {
             yearNodes.push(yearNode);
         }
 
-        const styles: string = this.options.options.join(" ");
+        const styles: string = [...this.options.options].join(" ");
         const timelineNode = (
             <div className={`taskido ${styles}`} id={`taskido ${this.tid}`}>
                 <span>

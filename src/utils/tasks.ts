@@ -181,12 +181,19 @@ export namespace TaskMapable {
 
     function filterByDateTime(date: Moment, by: moment.unitOfTime.StartOf) {
         return (item: TaskDataModel) => {
-            if (item.due) return date.isSame(item.due, by);
-            if (item.scheduled) return date.isSame(item.scheduled, by);
-            if (item.created) return date.isSame(item.created, by);
-            if (item.completion) return date.isSame(item.completion, by);
-            if (item.start) return date.isSame(item.start, by);
-            return false;
+            if (item.due && date.isSame(item.due, by)) return true;
+            if (item.scheduled && date.isSame(item.scheduled, by)) return true;
+            if (item.created && date.isSame(item.created, by)) return true;
+            if (item.completion && date.isSame(item.completion, by)) return true;
+            if (item.start && date.isSame(item.start, by)) return true;
+            let dates = false;
+            item.dates.forEach(d => {
+                if(date.isSame(d, by)){
+                    dates = true;
+                    return true;
+                }
+            });
+            return dates;
         }
     }
 

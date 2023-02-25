@@ -1,9 +1,15 @@
+import { Pos } from 'obsidian';
 import * as React from 'react'
+import { TaskDataModel } from '../utils/tasks';
 import { CounterProps } from './dateview';
 
+export const TaskListContext = React.createContext({
+    taskList: [] as TaskDataModel[],
+})
+
 export const UserOptionContext = React.createContext({
-    taskFiles: [] as string[],
-    select: undefined as string | undefined,
+    taskFiles: new Set<string>(),
+    select: "" as string,
     counters: [] as CounterProps[],
 });
 
@@ -11,12 +17,12 @@ export const CreateNewTaskContext = React.createContext({
     handleCreateNewTask: (filePath: string, content: string) => { },
 });
 
-export const TodayFocusEventHandlers = React.createContext({
+export const TodayFocusEventHandlersContext = React.createContext({
     handleTodayFocusClick: () => { },
 })
 
-export const TaskItemEventHandlers = React.createContext({
-    handleTagClick: (tag: string) => { },
-    handleOpenFile: (filePath: string, startOffset: number, endOffset: number) => { },
-    handleCompleteTask: (filePath: string, startOffset: number, endOffset: number) => { },
+export const TaskItemEventHandlersContext = React.createContext({
+    handleOpenFile: (filePath: string, position: Pos) => { },
+    handleCompleteTask: (filePath: string, position: Pos) => { },
+    handleTagClick: (tag: string) => {},
 })
