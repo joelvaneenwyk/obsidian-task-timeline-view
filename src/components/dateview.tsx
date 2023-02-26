@@ -3,7 +3,7 @@ import * as React from 'react';
 import { getFileTitle } from '../../../dataview-util/dataview';
 import { doneDateSymbol, dueDateSymbol, innerDateFormat, prioritySymbols, recurrenceSymbol, scheduledDateSymbol, startDateSymbol, TaskDataModel } from '../utils/tasks';
 import * as Icons from './asserts/icons';
-import { CreateNewTaskContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
+import { CreateNewTaskContext, TaskListContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
 import { TaskItemView } from './taskitemview';
 
 const defaultDateProps = {
@@ -14,22 +14,26 @@ type DateViewProps = Readonly<typeof defaultDateProps> & TodayContentProps;
 
 export class DateView extends React.Component<DateViewProps> {
     render(): React.ReactNode {
-        const thisYear = this.props.date.format("YYYY");
-        const thisDate = this.props.date.format(innerDateFormat);
-        const taskList = this.props.tasksOfToday;
+
         const isToday = this.props.date.isSame(moment(), 'date');
         return (
-            <div className={'details' + (isToday ? ' today' : '')} data-year={thisYear} data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
-                <DateHeader thisDate={thisDate} />
-                {isToday ?
-                    <TodayContent tasksOfToday={taskList} /> :
-                    <NormalDateContent tasksOfToday={taskList} date={this.props.date} />}
-            </div>)
+            <UserOptionContext.Consumer>{({ dateFormat }) => (
+                < TaskListContext.Consumer >{({ taskList }) => (
+                    <div className={'details' + (isToday ? ' today' : '')} data-year={this.props.date.format("YYYY")} data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
+                        <DateHeader thisDate={this.props.date.format(dateFormat)} />
+                        {isToday ?
+                            <TodayContent /> :
+                            <NormalDateContent date={this.props.date} />}
+                    </div>
+                )}
+                </TaskListContext.Consumer>
+            )}
+            </UserOptionContext.Consumer >
+        )
     }
 }
 
 const defaultTodayContentProps = {
-    tasksOfToday: [] as TaskDataModel[],
 }
 type TodayContentProps = Readonly<typeof defaultTodayContentProps> & CountersProps & QuickEntryProps;
 
@@ -40,9 +44,14 @@ class TodayContent extends React.Component<TodayContentProps> {
                 <TodayFocus />
                 <Counters />
                 <QuickEntry />
-                {this.props.tasksOfToday.map((t, i) => <TaskItemView taskItem={t} key={i}/>)}
-            </div>
-        )
+                <TaskListContext.Consumer>{({ taskList }) =>
+                    taskList.map((t, i) =>
+                        <TaskListContext.Provider value={{ taskList: [t] }}>
+                            <TaskItemView key={i} />
+                        </TaskListContext.Provider>
+                    )}
+                </TaskListContext.Consumer>
+            </div>)
     }
 }
 
@@ -61,18 +70,25 @@ class DateHeader extends React.Component<DateHeaderProps> {
 }
 
 type NormalDateContentProps = {
-    tasksOfToday: TaskDataModel[],
     date: moment.Moment,
 }
 
 class NormalDateContent extends React.Component<NormalDateContentProps> {
 
     render(): React.ReactNode {
-        const taskList = this.props.tasksOfToday;
         return (
-            <div className='content'>
-                {taskList.map((t, i) => <TaskItemView taskItem={t} key={i} />)}
-            </div>)
+            <TaskListContext.Consumer>{({ taskList }) => {
+                return (
+                    <div className='content'>
+                        {taskList.map((t, i) =>
+                            <TaskListContext.Provider value={{ taskList: [t] }}>
+                                <TaskItemView key={i} />
+                            </TaskListContext.Provider>
+                        )}
+                    </div>)
+            }}
+            </TaskListContext.Consumer>
+        )
     }
 }
 
@@ -110,7 +126,7 @@ class QuickEntry extends React.Component<QuickEntryProps, QuickEntryState> {
     }
 
     onQuickEntryFileSelectChange() {
-        if(!this.fileSecect.current)return;
+        if (!this.fileSecect.current) return;
         this.setState({
             selectedFile: this.fileSecect.current?.value,
         })
@@ -179,11 +195,11 @@ class QuickEntry extends React.Component<QuickEntryProps, QuickEntryState> {
         return (
             <div className='quickEntryPanel' ref={this.quickEntryPanel}>
                 <div className='left'>
-                    <UserOptionContext.Consumer>{options => {
+                    <UserOptionContext.Consumer>{({ taskFiles }) => {
                         return (
                             <select className='fileSelect' ref={this.fileSecect} aria-label='Select a note to add a new task to'
                                 onChange={this.onQuickEntryFileSelectChange} value={this.state.selectedFile}>
-                                {[...options.taskFiles].map((f, i) => {
+                                {[...taskFiles].map((f, i) => {
                                     const secondParentFolder =
                                         !(f.split("/")[f.split("/").length - 3]) ? "" : "… / ";
                                     const parentFolder =
@@ -191,7 +207,7 @@ class QuickEntry extends React.Component<QuickEntryProps, QuickEntryState> {
                                             (secondParentFolder + "📂 " + f.split("/")[f.split("/").length - 2] + " / ");
                                     const filePath = parentFolder + "📄 " + getFileTitle(f);
                                     return (
-                                        <option style={{whiteSpace: "nowrap"}} value={f} title={f} key={i}>
+                                        <option style={{ whiteSpace: "nowrap" }} value={f} title={f} key={i}>
                                             {filePath}
                                         </option>);
                                 })}

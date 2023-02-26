@@ -3,12 +3,11 @@ import * as React from 'react';
 import { Options } from '../utils/options';
 import { innerDateFormat, TaskDataModel, TaskMapable, TaskStatus } from '../utils/tasks';
 import { YearView } from './yearview';
-import { UserOptionContext, TodayFocusEventHandlersContext } from './context';
+import { UserOptionContext, TodayFocusEventHandlersContext, TaskListContext } from './context';
 
 
 const defaultTimelineProps = {
     userOptions: {} as Options,
-    taskList: [] as TaskDataModel[],
 }
 const defaultTimelineStates = {
     filter: "" as string,
@@ -35,7 +34,7 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
             this.setState({
                 filter: filterName,
             })
-        }else{
+        } else {
             this.setState({
                 filter: ""
             })
@@ -49,81 +48,80 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
     }
 
     render(): React.ReactNode {
-    
-        const involvedDates: Set<string> = new Set();
 
-        this.props.taskList.forEach((t: TaskDataModel) => {
-            t.due && involvedDates.add(t.due.format(innerDateFormat));
-            t.scheduled && involvedDates.add(t.scheduled.format(innerDateFormat));
-            t.created && involvedDates.add(t.created.format(innerDateFormat));
-            t.start && involvedDates.add(t.start.format(innerDateFormat));
-            t.completion && involvedDates.add(t.completion.format(innerDateFormat));
-            t.dates.forEach((d: Moment, k: string) => {
-                involvedDates.add(d.format(innerDateFormat));
-            });
-        })
-
-        if (!involvedDates.has(moment().format(innerDateFormat)))
-            involvedDates.add(moment().format(innerDateFormat));
-
-        const sortedDatas = [...involvedDates].sort();
-
-        const earliestYear: number = +moment(sortedDatas[0].toString()).format("YYYY");
-        const latestYear: number = +moment(sortedDatas[sortedDatas.length - 1].toString()).format("YYYY");
-
-        const daysOfYears = []
-        const tasksOfYears: TaskDataModel[][] = []
-        for (let y = earliestYear; y < latestYear + 1; ++y) {
-            const daysOfThisYear = sortedDatas.filter(d => moment(d).year() === y);
-            //if (daysOfThisYear.length === 0) continue;
-            daysOfYears.push(daysOfThisYear);
-            const tasksOfThisYear = this.props.taskList.filter(TaskMapable.filterYear(moment().year(y)));
-            //if (tasksOfThisYear.length === 0) continue;
-            tasksOfYears.push(tasksOfThisYear);
-        }
-
-        const todoCount: number = this.props.taskList.filter(t => !t.completed &&
-            t.status !== TaskStatus.overdue && t.status !== TaskStatus.unplanned).length;
-        const overdueCount: number = this.props.taskList.filter(t => t.status === TaskStatus.overdue).length;
-        const unplannedCount: number = this.props.taskList.filter(t => t.status === TaskStatus.unplanned).length;
-
-        const styles = [...this.props.userOptions.options].join(" ");
         return (
-            <div className={`taskido ${styles} ${this.state.filter} ${this.state.todayFocus ? "todayFocus" : ""}`} id={`taskido${(new Date()).getTime()}`}>
-                <TodayFocusEventHandlersContext.Provider value={{ handleTodayFocusClick: this.handleTodayFocus }}>
-                    <UserOptionContext.Provider value={{
-                        taskFiles: this.props.userOptions.taskFiles,
-                        select: this.props.userOptions.select,
-                        counters: [
-                            {
-                                onClick: () => { this.handleCounterFilterClick('todoFilter') },
-                                cnt: todoCount,
-                                label: "Todo",
-                                id: "todo",
-                                ariaLabel: "Filter Todo Tasks"
-                            }, {
-                                onClick: () => { this.handleCounterFilterClick('overdueFilter') },
-                                cnt: overdueCount,
-                                id: "overdue",
-                                label: "Overdue",
-                                ariaLabel: "Filter Overdue Tasks"
-                            }, {
-                                onClick: () => { this.handleCounterFilterClick('unplannedFilter') },
-                                cnt: unplannedCount,
-                                id: "unplanned",
-                                label: "Unplanned",
-                                ariaLabel: "Filter Unplanned Tasks"
-                            }
-                        ]
-                    }}>
-                        <span>
-                            {daysOfYears.map((ds, idx) => (
-                                <YearView datesOfThisYear={ds.map((d, i) => moment(d))} tasksOfThisYear={tasksOfYears[idx]} key={idx} />
-                            ))}
-                        </span>
-                    </UserOptionContext.Provider>
-                </TodayFocusEventHandlersContext.Provider>
-            </div>
+            <TaskListContext.Consumer>{({ taskList }) => {
+                const involvedDates: Set<string> = new Set();
+
+                taskList.forEach((t: TaskDataModel) => {
+                    t.due && involvedDates.add(t.due.format(innerDateFormat));
+                    t.scheduled && involvedDates.add(t.scheduled.format(innerDateFormat));
+                    t.created && involvedDates.add(t.created.format(innerDateFormat));
+                    t.start && involvedDates.add(t.start.format(innerDateFormat));
+                    t.completion && involvedDates.add(t.completion.format(innerDateFormat));
+                    t.dates.forEach((d: Moment, k: string) => {
+                        involvedDates.add(d.format(innerDateFormat));
+                    });
+                })
+
+                if (!involvedDates.has(moment().format(innerDateFormat)))
+                    involvedDates.add(moment().format(innerDateFormat));
+
+                const sortedDatas = [...involvedDates].sort();
+                const earliestYear: number = +moment(sortedDatas[0].toString()).format("YYYY");
+                const latestYear: number = +moment(sortedDatas[sortedDatas.length - 1].toString()).format("YYYY");
+                const years = Array.from({ length: latestYear - earliestYear + 1 }, (_, i) => i + earliestYear);
+
+                const todoCount: number = taskList.filter(t => !t.completed &&
+                    t.status !== TaskStatus.overdue && t.status !== TaskStatus.unplanned &&
+                    t.status !== TaskStatus.done && t.status !== TaskStatus.cancelled).length;
+                const overdueCount: number = taskList.filter(t => t.status === TaskStatus.overdue).length;
+                const unplannedCount: number = taskList.filter(t => t.status === TaskStatus.unplanned).length;
+
+                const styles = [...this.props.userOptions.options].join(" ");
+                return (
+                    <div className={`taskido ${styles} ${this.state.filter} ${this.state.todayFocus ? "todayFocus" : ""}`} id={`taskido${(new Date()).getTime()}`}>
+                        <TodayFocusEventHandlersContext.Provider value={{ handleTodayFocusClick: this.handleTodayFocus }}>
+                            <UserOptionContext.Provider value={{
+                                dateFormat: "DD mm yyyy",
+                                taskFiles: this.props.userOptions.taskFiles,
+                                select: this.props.userOptions.select,
+                                counters: [
+                                    {
+                                        onClick: () => { this.handleCounterFilterClick('todoFilter') },
+                                        cnt: todoCount,
+                                        label: "Todo",
+                                        id: "todo",
+                                        ariaLabel: "Filter Todo Tasks"
+                                    }, {
+                                        onClick: () => { this.handleCounterFilterClick('overdueFilter') },
+                                        cnt: overdueCount,
+                                        id: "overdue",
+                                        label: "Overdue",
+                                        ariaLabel: "Filter Overdue Tasks"
+                                    }, {
+                                        onClick: () => { this.handleCounterFilterClick('unplannedFilter') },
+                                        cnt: unplannedCount,
+                                        id: "unplanned",
+                                        label: "Unplanned",
+                                        ariaLabel: "Filter Unplanned Tasks"
+                                    }
+                                ]
+                            }}>
+                                <span>
+                                    {years.map((y) => (
+                                        <TaskListContext.Provider value={
+                                            { taskList: taskList.filter(TaskMapable.filterYear(moment().year(y))) }
+                                        }>
+                                            <YearView year={y} key={y} />
+                                        </TaskListContext.Provider>
+                                    ))}
+                                </span>
+                            </UserOptionContext.Provider>
+                        </TodayFocusEventHandlersContext.Provider>
+                    </div>)
+            }}
+            </TaskListContext.Consumer>
         );
     }
 }

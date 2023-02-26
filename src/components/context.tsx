@@ -11,6 +11,7 @@ export const UserOptionContext = React.createContext({
     taskFiles: new Set<string>(),
     select: "" as string,
     counters: [] as CounterProps[],
+    dateFormat: "YYYY-MM-DD" as string,
 });
 
 export const CreateNewTaskContext = React.createContext({

@@ -1,6 +1,6 @@
 import { App, ItemView, Notice, Pos } from 'obsidian';
 import * as React from 'react';
-import { CreateNewTaskContext, TaskItemEventHandlersContext } from './components/context';
+import { CreateNewTaskContext, TaskItemEventHandlersContext, TaskListContext } from './components/context';
 import { TimelineView } from './components/timelineview';
 import { ObsidianTaskAdapter } from './taskadapter';
 import { TimelineSettings } from './utils/options';
@@ -67,15 +67,22 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
         this.app.vault.adapter.exists(path).then(exist => {
             if (!exist && confirm("No such file: " + path + ". Would you like to create it?")) {
                 const content = section + "\n\n" + taskStr;
-                this.app.vault.create(path, content).catch(reason => {
-                    return new Notice("Error when creating file " + path + " for new task: " + reason);
-                });
+                this.app.vault.create(path, content)
+                    .then(() => {
+                        this.onUpdateTasks();
+                    })
+                    .catch(reason => {
+                        return new Notice("Error when creating file " + path + " for new task: " + reason);
+                    });
                 return;
             }
             this.app.vault.adapter.read(path).then(content => {
                 const lines = content.split('\n');
                 lines.splice(lines.indexOf(section) + 1, 0, taskStr);
                 this.app.vault.adapter.write(path, lines.join("\n"))
+                    .then(() => {
+                        this.onUpdateTasks();
+                    })
                     .catch(reason => {
                         return new Notice("Error when writing new tasks to " + path + "." + reason, 5000);
                     });
@@ -130,6 +137,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
             if (!match || match.length < 5) return;
             const newTask = [match[1], match[2], ((match[3] === ' ') ? '[x]' : '[ ]'), match[4]].join(' ').trimStart();
             this.app.workspace.activeEditor?.editor?.replaceSelection(newTask);
+            this.onUpdateTasks();
         })
     }
 
@@ -142,7 +150,9 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
                     handleCompleteTask: this.handleCompleteTask,
                     handleTagClick: this.handleTagClick,
                 }}>
-                    <TimelineView userOptions={this.options} taskList={this.state.taskList} />
+                    <TaskListContext.Provider value={{ taskList: this.state.taskList }}>
+                        <TimelineView userOptions={this.options} />
+                    </TaskListContext.Provider>
                 </TaskItemEventHandlersContext.Provider>
             </CreateNewTaskContext.Provider>
         )

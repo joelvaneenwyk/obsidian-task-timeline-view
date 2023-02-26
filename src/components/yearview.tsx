@@ -1,40 +1,59 @@
 import moment, { Moment } from 'moment';
 import * as React from 'react';
-import { TaskDataModel, TaskMapable } from '../utils/tasks';
+import { innerDateFormat, TaskDataModel, TaskMapable } from '../utils/tasks';
+import { TaskListContext } from './context';
 import { DateView } from './dateview';
 
 const defaultYearViewProps = {
-    tasksOfThisYear: [] as TaskDataModel[],
-    datesOfThisYear: [] as Moment[],
+    year: 2023 as number,
 };
 type YearViewProps = Readonly<typeof defaultYearViewProps>;
 export class YearView extends React.Component<YearViewProps> {
     render(): React.ReactNode {
-        if (this.props.datesOfThisYear.length === 0) return (<div></div>);
         return (
-            <div>
-                <YearHeader year={this.props.datesOfThisYear[0]} dataTypes={this.props.tasksOfThisYear.map(t => t.status)} />
-                {this.props.datesOfThisYear.map((d, i) => {
-                    const tasksOfThisDate = this.props.tasksOfThisYear.filter(TaskMapable.filterDate(d));
-                    return (
-                        <DateView date={d} tasksOfToday={tasksOfThisDate} key={i}/>
-                    )
-                })}
-            </div>);
+            <TaskListContext.Consumer>{({ taskList }) => {
+                const tasksOfThisYear = taskList;
+                const daysOfThisYear: Set<string> = new Set();
+                tasksOfThisYear.forEach((t) => {
+                    t.due && daysOfThisYear.add(t.due.format(innerDateFormat));
+                    t.scheduled && daysOfThisYear.add(t.scheduled.format(innerDateFormat));
+                    t.created && daysOfThisYear.add(t.created.format(innerDateFormat));
+                    t.start && daysOfThisYear.add(t.start.format(innerDateFormat));
+                    t.completion && daysOfThisYear.add(t.completion.format(innerDateFormat));
+                    t.dates.forEach((d: Moment, k: string) => {
+                        daysOfThisYear.add(d.format(innerDateFormat));
+                    });
+                })
+                return (
+                    <div>
+                        <YearHeader year={this.props.year} dataTypes={tasksOfThisYear.map(t => t.status)} />
+                        {[...daysOfThisYear].map((d, i) => {
+                            const tasksOfThisDate = tasksOfThisYear.filter(TaskMapable.filterDate(moment(d)));
+                            return (
+                                <TaskListContext.Provider value={{ taskList: tasksOfThisDate }}>
+                                    <DateView date={moment(d)} key={i} />
+                                </TaskListContext.Provider>
+                            )
+                        })}
+                    </div>)
+            }}
+            </TaskListContext.Consumer>
+        );
     }
 }
 
 const defaultYearHeaderProps = {
-    year: moment() as Moment,
+    year: 2023 as number,
     dataTypes: [] as string[],
 }
 type YearHeaderProps = Readonly<typeof defaultYearHeaderProps>;
 class YearHeader extends React.Component<YearHeaderProps> {
     render(): React.ReactNode {
+        const yearMoment = moment().year(this.props.year);
         return (
-            <div className={"year" + (this.props.year.isSame(moment(), 'year') ? " current" : "")}
+            <div className={"year" + (yearMoment.isSame(moment(), 'year') ? " current" : "")}
                 data-types={this.props.dataTypes.join(" ")}>
-                {this.props.year.format("YYYY")}
+                {yearMoment.format("YYYY")}
             </div>
         );
     }
