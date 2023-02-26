@@ -45,13 +45,13 @@ export type TaskStatusType =
     | "cancelled"
 
 export const enum TaskStatus {
-    due = 'due',
-    scheduled = 'scheduled',
-    start = 'start',
+    due = 'due',// to-do type
+    scheduled = 'scheduled', // to-do type
+    start = 'start', //to-do type
     done = 'done',
     unplanned = 'unplanned',
     overdue = 'overdue',
-    process = 'process',
+    process = 'process',// to-do type
     cancelled = 'cancelled',
 }
 
@@ -435,22 +435,22 @@ export namespace TaskMapable {
             return item;
         }
 
-        if (item.due && item.due.isBefore()) {
+        if (item.due && item.due.isBefore('day')) {
             item.status = TaskStatus.overdue;
             return item;
         }
 
-        if (item.due && item.due.isSame()) {
+        if (item.due && item.due.isSame('day')) {
             item.status = TaskStatus.due;
             return item;
         }
 
-        if (item.start && item.start.isBefore()) {
+        if (item.start && item.start.isBefore('day')) {
             item.status = TaskStatus.process;
             return item;
         }
 
-        if (item.scheduled && item.scheduled.isBefore()) {
+        if (item.scheduled && item.scheduled.isBefore('day')) {
             item.status = TaskStatus.start;
             return item;
         }
