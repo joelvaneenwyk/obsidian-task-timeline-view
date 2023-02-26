@@ -1,33 +1,61 @@
 import { Link } from "../../dataview-util/markdown";
 import { App, FrontMatterCache, LinkCache, ListItemCache, Pos, SectionCache, TagCache, TFile } from "obsidian";
-import { Priority, TaskDataModel, TaskRegularExpressions } from "./utils/tasks";
+import { Priority, TaskDataModel, TaskMapable, TaskRegularExpressions, TaskStatus } from "./utils/tasks";
+import moment from "moment";
 
 export class ObsidianTaskAdapter {
     private app: App;
-    private tasksList: Array<TaskDataModel>;
+    private tasksList: Array<TaskDataModel> = [];
     constructor(app: App) {
         this.app = app;
-        this.tasksList = new Array();
-        this.generateTasksList();
+
+        this.generateTasksList = this.generateTasksList.bind(this);
+        this.parseTasks = this.parseTasks.bind(this);
+        this.getTaskList = this.getTaskList.bind(this);
+        this.fromItemCache = this.fromItemCache.bind(this);
+        this.fromLine = this.fromLine.bind(this);
+        
     }
 
-    getTaskList(){
-        return [...this.tasksList];
+    getTaskList() {
+        return this.tasksList;
     }
 
-    apply(mapable: (t: TaskDataModel) => TaskDataModel){
-        this.tasksList = this.tasksList.map(mapable);
-        return this;
+    async parseTasks(taskOrder: Set<string> = new Set(["overdue", "due", "scheduled", "start", "process", "unplanned", "done", "cancelled"])) {
+        const orderMap: Map<string, number> = new Map();
+        [...taskOrder].forEach((value: string, index: number) => {
+            orderMap.set(value, index);
+        });
+
+        const dailyNoteFormatParser = TaskMapable.dailyNoteTaskParser();
+
+        this.tasksList = await this.tasksList
+            .map(TaskMapable.tasksPluginTaskParser)
+            .map(TaskMapable.dataviewTaskParser)
+            .map(dailyNoteFormatParser)
+            .map(TaskMapable.taskLinkParser)
+            .map(TaskMapable.remainderParser)
+            .map(TaskMapable.postProcessor)
+            .map((t: TaskDataModel) => {
+                t.order = orderMap.get(t.status) || 0;
+                return t;
+            })
+            .map((t: TaskDataModel) => {
+                if (t.status === TaskStatus.unplanned) t.dates.set("unplanned", moment())
+                else if (t.status === TaskStatus.done && !t.completion &&
+                    !t.due && !t.start && !t.scheduled && !t.created) t.dates.set("done-unplanned", moment());
+                return t;
+            });
     }
 
-    generateTasksList() {
-        this.tasksList = new Array;
+    async generateTasksList() {
+        this.tasksList.length = 0;
         const files = app.vault.getMarkdownFiles();
-        files.forEach((file: TFile) => {
+        await files.forEach(async (file: TFile) => {
             const link = Link.file(file.path);
             const fileContent = this.app.vault.cachedRead(file);
             const cache = this.app.metadataCache.getFileCache(file);
-            cache?.listItems?.forEach(this.fromItemCache(link, file.path, fileContent,
+            await cache?.listItems?.forEach(this.fromItemCache(link, file.path, fileContent,
                 cache.sections, cache.links, cache.frontmatter, cache.tags));
         })
     }
@@ -47,7 +75,7 @@ export class ObsidianTaskAdapter {
      */
     private fromItemCache(link: Link, filePath: string, fileContent: Promise<string>,
         sections?: SectionCache[], links?: LinkCache[], fontmatter?: FrontMatterCache, tags?: TagCache[]) {
-        return (item: ListItemCache) => {
+        return async (item: ListItemCache) => {
             if (!(item.task)) return null;
             const itemPos = item.position;
             const parent = item.parent;
@@ -66,11 +94,11 @@ export class ObsidianTaskAdapter {
             };
 
             const findTags = (line: number) => {
-                if(!tags)return null;
+                if (!tags) return null;
                 return tags.filter(t => t.position.start.line === line).map(s => s.tag);
             }
 
-            fileContent.then((content) => {
+            await fileContent.then((content) => {
                 const sliceFileContent = (pos: Pos) => {
                     return content.slice(pos.start.offset, pos.end.offset);
                 };
@@ -86,7 +114,7 @@ export class ObsidianTaskAdapter {
                 const tags = findTags(itemPos.start.line);
 
                 const taskItem = this.fromLine(itemText, filePath, parentLink, itemPos, outLinkLinks, fontmatter, tags || []);
-                if (!!taskItem){
+                if (!!taskItem) {
                     this.tasksList.push(taskItem);
                 }
             });

@@ -40,7 +40,7 @@ class TodayContent extends React.Component<TodayContentProps> {
                 <TodayFocus />
                 <Counters />
                 <QuickEntry />
-                {this.props.tasksOfToday.map(t => <TaskItemView taskItem={t} />)}
+                {this.props.tasksOfToday.map((t, i) => <TaskItemView taskItem={t} key={i}/>)}
             </div>
         )
     }
