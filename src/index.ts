@@ -1,6 +1,6 @@
 import * as input from '../_input'
 import { View } from './components/view'
-import { TimelineSettings } from './utils/options'
+import { TimelineSettings } from '../../utils/options'
 
 
 const view = new View(

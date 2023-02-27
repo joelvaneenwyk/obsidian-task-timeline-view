@@ -1,10 +1,10 @@
 import { App, ItemView, Notice, Pos } from 'obsidian';
 import * as React from 'react';
+import { TaskDataModel, TaskRegularExpressions } from '../../utils/tasks';
+import { TimelineSettings } from '../../utils/options';
 import { CreateNewTaskContext, TaskItemEventHandlersContext, TaskListContext } from './components/context';
 import { TimelineView } from './components/timelineview';
 import { ObsidianTaskAdapter } from './taskadapter';
-import { TimelineSettings } from './utils/options';
-import { TaskDataModel, TaskRegularExpressions } from './utils/tasks';
 
 const defaultObsidianBridgeProps = {
     plugin: {} as ItemView,

@@ -1,17 +1,15 @@
-import './components/view.css'
-import * as icons from './asserts/icons'
+import moment, { Moment } from 'moment';
+import * as React from "react";
+import ReactDOM from 'react-dom/client';
+import ReactDOMServer from 'react-dom/server';
+import { getFileTitle } from '../../../dataview-util/dataview';
+import { Options, TimelineSettings } from '../../../utils/options';
 import {
     doneDateSymbol, dueDateSymbol, innerDateFormat, prioritySymbols,
-    recurrenceSymbol, scheduledDateSymbol, startDateSymbol, TaskDataModel,
-    TaskRegularExpressions, TaskStatus
-} from '../utils/tasks'
-import { Options, TimelineSettings } from '../utils/options'
-import { TaskMapable } from "../utils/tasks";
-import moment, { Moment } from 'moment'
-import * as React from "react";
-import ReactDOM from 'react-dom/client'
-import { getFileTitle } from '../../../dataview-util/dataview';
-import ReactDOMServer from 'react-dom/server';
+    recurrenceSymbol, scheduledDateSymbol, startDateSymbol, TaskDataModel, TaskMapable, TaskRegularExpressions, TaskStatus
+} from '../../../utils/tasks';
+import * as icons from './asserts/icons';
+import './components/view.css';
 
 export class View {
     private options: Options;

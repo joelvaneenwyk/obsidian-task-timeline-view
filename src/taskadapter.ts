@@ -1,7 +1,7 @@
-import { Link } from "../../dataview-util/markdown";
-import { App, FrontMatterCache, LinkCache, ListItemCache, Pos, SectionCache, TagCache, TFile } from "obsidian";
-import { Priority, TaskDataModel, TaskMapable, TaskRegularExpressions, TaskStatus } from "./utils/tasks";
 import moment from "moment";
+import { App, FrontMatterCache, LinkCache, ListItemCache, Pos, SectionCache, TagCache, TFile } from "obsidian";
+import { Link } from "../../dataview-util/markdown";
+import { Priority, TaskDataModel, TaskMapable, TaskRegularExpressions, TaskStatus } from "../../utils/tasks";
 
 export class ObsidianTaskAdapter {
     private app: App;

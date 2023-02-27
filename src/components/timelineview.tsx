@@ -1,9 +1,9 @@
 import moment, { Moment } from 'moment';
 import * as React from 'react';
-import { Options } from '../utils/options';
-import { innerDateFormat, TaskDataModel, TaskMapable, TaskStatus } from '../utils/tasks';
+import { Options } from '../../../utils/options';
+import { innerDateFormat, TaskDataModel, TaskMapable, TaskStatus } from '../../../utils/tasks';
+import { TaskListContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
 import { YearView } from './yearview';
-import { UserOptionContext, TodayFocusEventHandlersContext, TaskListContext } from './context';
 
 
 const defaultTimelineProps = {

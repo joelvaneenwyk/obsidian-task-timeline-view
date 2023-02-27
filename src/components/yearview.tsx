@@ -1,6 +1,6 @@
 import moment, { Moment } from 'moment';
 import * as React from 'react';
-import { innerDateFormat, TaskDataModel, TaskMapable } from '../utils/tasks';
+import { innerDateFormat, TaskMapable } from '../../../utils/tasks';
 import { TaskListContext } from './context';
 import { DateView } from './dateview';
 
