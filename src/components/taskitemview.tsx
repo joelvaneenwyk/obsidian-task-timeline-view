@@ -39,7 +39,7 @@ export class TaskItemView extends React.Component<TaskItemProps, TaskItemState> 
                     const col = item.position.end.col;
                     const link = item.link.path.replace("'", "&apos;");
                     const isDailyNote = item.dailyNote;
-                    const color = item.fontMatter["color"]?.[0];
+                    const color = item.fontMatter["color"];
                     const ariaLabel = getFileTitle(item.path);
                     return (
                         <TaskItemEventHandlersContext.Consumer>{
