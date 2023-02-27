@@ -14,7 +14,7 @@ export class ObsidianTaskAdapter {
         this.getTaskList = this.getTaskList.bind(this);
         this.fromItemCache = this.fromItemCache.bind(this);
         this.fromLine = this.fromLine.bind(this);
-        
+
     }
 
     getTaskList() {
@@ -53,9 +53,9 @@ export class ObsidianTaskAdapter {
         const files = app.vault.getMarkdownFiles();
         await files.forEach(async (file: TFile) => {
             const link = Link.file(file.path);
-            const fileContent = this.app.vault.cachedRead(file);
+            const fileContent = await this.app.vault.cachedRead(file);
             const cache = this.app.metadataCache.getFileCache(file);
-            await cache?.listItems?.forEach(this.fromItemCache(link, file.path, fileContent,
+            cache?.listItems?.forEach(this.fromItemCache(link, file.path, fileContent,
                 cache.sections, cache.links, cache.frontmatter, cache.tags));
         })
     }
@@ -73,9 +73,11 @@ export class ObsidianTaskAdapter {
      * @param tags The tag cache from Obsidian.
      * @returns This funcion directly modify this.taskList. 
      */
-    private fromItemCache(link: Link, filePath: string, fileContent: Promise<string>,
-        sections?: SectionCache[], links?: LinkCache[], fontmatter?: FrontMatterCache, tags?: TagCache[]) {
-        return async (item: ListItemCache) => {
+    private fromItemCache(link: Link, filePath: string, fileContent: string,
+        sections?: SectionCache[], links?: LinkCache[], fontmatter?: FrontMatterCache, tagsCache?: TagCache[]) {
+            console.log(filePath)
+        return (item: ListItemCache) => {
+            console.log(item)
             if (!(item.task)) return null;
             const itemPos = item.position;
             const parent = item.parent;
@@ -93,31 +95,29 @@ export class ObsidianTaskAdapter {
                 return links.filter(s => s.position.start.line === line);
             };
 
-            const findTags = (line: number) => {
-                if (!tags) return null;
-                return tags.filter(t => t.position.start.line === line).map(s => s.tag);
+            const findTags = (line: number): string[] | null => {
+                if (!tagsCache) return null;
+                return tagsCache.filter(t => t.position.start.line === line).map(s => s.tag);
+            };
+
+            const sliceFileContent = (pos: Pos) => {
+                return fileContent.slice(pos.start.offset, pos.end.offset);
+            };
+
+            const itemText = sliceFileContent(itemPos);
+            const parentItem = findParent(parent);
+            const outLinks = findOutLinks(itemPos.start.line);
+            const parentLink = (!!parentItem) ?
+                link.withSectionCache(parentItem, sliceFileContent(parentItem?.position)) : link;
+            const outLinkLinks = (!!outLinks) ?
+                outLinks.map(v => Link.withLinkCache(v)) : [];
+
+            const tags = findTags(itemPos.start.line);
+
+            const taskItem = this.fromLine(itemText, filePath, parentLink, itemPos, outLinkLinks, fontmatter, tags || []);
+            if (!!taskItem) {
+                this.tasksList.push(taskItem);
             }
-
-            await fileContent.then((content) => {
-                const sliceFileContent = (pos: Pos) => {
-                    return content.slice(pos.start.offset, pos.end.offset);
-                };
-
-                const itemText = sliceFileContent(itemPos);
-                const parentItem = findParent(parent);
-                const outLinks = findOutLinks(itemPos.start.line);
-                const parentLink = (!!parentItem) ?
-                    link.withSectionCache(parentItem, sliceFileContent(parentItem?.position)) : link;
-                const outLinkLinks = (!!outLinks) ?
-                    outLinks.map(v => Link.withLinkCache(v)) : [];
-
-                const tags = findTags(itemPos.start.line);
-
-                const taskItem = this.fromLine(itemText, filePath, parentLink, itemPos, outLinkLinks, fontmatter, tags || []);
-                if (!!taskItem) {
-                    this.tasksList.push(taskItem);
-                }
-            });
         }
     }
     /**

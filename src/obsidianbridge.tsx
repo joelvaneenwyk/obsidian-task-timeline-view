@@ -38,10 +38,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
     }
 
     componentDidMount(): void {
-        this.props.plugin.registerEvent(this.app.vault.on("create", this.onUpdateTasks));
-        this.props.plugin.registerEvent(this.app.vault.on("delete", this.onUpdateTasks));
-        this.props.plugin.registerEvent(this.app.vault.on("modify", this.onUpdateTasks));
-        this.props.plugin.registerEvent(this.app.vault.on("rename", this.onUpdateTasks));
+        this.props.plugin.registerEvent(this.app.metadataCache.on('resolved', this.onUpdateTasks));
         this.onUpdateTasks();
     }
 
@@ -142,7 +139,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
     }
 
     render(): React.ReactNode {
-        console.log(this.state.taskList)
+        console.log("Now the root node are rendering with: ", this.state.taskList)
         return (
             <CreateNewTaskContext.Provider value={{ handleCreateNewTask: this.handleCreateNewTask }}>
                 <TaskItemEventHandlersContext.Provider value={{
