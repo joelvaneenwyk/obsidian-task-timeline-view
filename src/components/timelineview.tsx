@@ -109,10 +109,10 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
                                 ]
                             }}>
                                 <span>
-                                    {years.map((y) => (
+                                    {years.map((y, i) => (
                                         <TaskListContext.Provider value={
                                             { taskList: taskList.filter(TaskMapable.filterYear(moment().year(y))) }
-                                        }>
+                                        } key={i}>
                                             <YearView year={y} key={y} />
                                         </TaskListContext.Provider>
                                     ))}

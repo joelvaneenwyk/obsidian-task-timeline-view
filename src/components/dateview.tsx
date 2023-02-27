@@ -46,7 +46,7 @@ class TodayContent extends React.Component<TodayContentProps> {
                 <QuickEntry />
                 <TaskListContext.Consumer>{({ taskList }) =>
                     taskList.map((t, i) =>
-                        <TaskListContext.Provider value={{ taskList: [t] }}>
+                        <TaskListContext.Provider value={{ taskList: [t] }} key={i}>
                             <TaskItemView key={i} />
                         </TaskListContext.Provider>
                     )}
@@ -81,7 +81,7 @@ class NormalDateContent extends React.Component<NormalDateContentProps> {
                 return (
                     <div className='content'>
                         {taskList.map((t, i) =>
-                            <TaskListContext.Provider value={{ taskList: [t] }}>
+                            <TaskListContext.Provider value={{ taskList: [t] }} key={i}>
                                 <TaskItemView key={i} />
                             </TaskListContext.Provider>
                         )}
