@@ -49,8 +49,10 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
                 var tasks = this.adapter.getTaskList();
                 if (this.props.opt.useTagFilter) {
                     tasks = tasks
-                        .filter(task => task.tags.some(tag => this.props.opt.taskTagFilters.includes(tag)))
-                        .filter(task => task.tags.some(tag => this.props.opt.fileTagFilters.includes(tag)));
+                        .filter(task => this.props.opt.taskTagFilters.length === 0 ||
+                            this.props.opt.taskTagFilters.some(t => task.tags.includes(t)))
+                        .filter(task => this.props.opt.fileTagFilters.length === 0 ||
+                            this.props.opt.fileTagFilters.some(t => task.tags.includes(t)));
                 }
 
                 if (this.state.userOptions.taskFiles.length === 0) {
