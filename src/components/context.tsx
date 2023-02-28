@@ -8,10 +8,12 @@ export const TaskListContext = React.createContext({
 })
 
 export const UserOptionContext = React.createContext({
-    taskFiles: new Set<string>(),
+    taskFiles: [] as string[],
     select: "" as string,
     counters: [] as CounterProps[],
     dateFormat: "YYYY-MM-DD" as string,
+    tagPalette: {} as any,
+    hideTags: [] as string[],
 });
 
 export const CreateNewTaskContext = React.createContext({

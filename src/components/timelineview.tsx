@@ -1,13 +1,13 @@
 import moment, { Moment } from 'moment';
 import * as React from 'react';
-import { Options } from '../../../utils/options';
+import { UserOption } from '../../../src/settings'
 import { innerDateFormat, TaskDataModel, TaskMapable, TaskStatus } from '../../../utils/tasks';
 import { TaskListContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
 import { YearView } from './yearview';
 
 
 const defaultTimelineProps = {
-    userOptions: {} as Options,
+    userOptions: {} as UserOption,
 }
 const defaultTimelineStates = {
     filter: "" as string,
@@ -24,8 +24,8 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
         this.handleTodayFocus = this.handleTodayFocus.bind(this);
 
         this.state = {
-            filter: "",
-            todayFocus: false,
+            filter: this.props.userOptions.defaultFilters,
+            todayFocus: this.props.userOptions.defaultTodayFocus,
         }
     }
 
@@ -78,14 +78,35 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
                 const overdueCount: number = taskList.filter(t => t.status === TaskStatus.overdue).length;
                 const unplannedCount: number = taskList.filter(t => t.status === TaskStatus.unplanned).length;
 
-                const styles = [...this.props.userOptions.options].join(" ");
+                const styles = new Array<string>;
+                if (!this.props.userOptions.useCounters) styles.push("noCounters");
+                if (!this.props.userOptions.useQuickEntry) styles.push("noQuickEntry");
+                if (!this.props.userOptions.useYearHeader) styles.push("noYear");
+                if (!this.props.userOptions.useCompletedTasks) styles.push("noDone");
+                if (!this.props.userOptions.useInfo.useFileBadge &&
+                    !this.props.userOptions.useInfo.usePriority &&
+                    !this.props.userOptions.useInfo.useRecurrence &&
+                    !this.props.userOptions.useInfo.useRelative &&
+                    !this.props.userOptions.useInfo.useSection &&
+                    !this.props.userOptions.useInfo.useTags) styles.push("noInfo");
+                else {
+                    if (!this.props.userOptions.useInfo.useFileBadge) styles.push("noFile");
+                    if (!this.props.userOptions.useInfo.usePriority) styles.push("noPriority");
+                    if (!this.props.userOptions.useInfo.useRecurrence) styles.push("noRepeat");
+                    if (!this.props.userOptions.useInfo.useRelative) styles.push("noRelative");
+                    if (!this.props.userOptions.useInfo.useSection) styles.push("noHeader");
+                    if (!this.props.userOptions.useInfo.useTags) styles.push("noTag");
+                }
+
                 return (
                     <div className={`taskido ${styles} ${this.state.filter} ${this.state.todayFocus ? "todayFocus" : ""}`} id={`taskido${(new Date()).getTime()}`}>
                         <TodayFocusEventHandlersContext.Provider value={{ handleTodayFocusClick: this.handleTodayFocus }}>
                             <UserOptionContext.Provider value={{
+                                hideTags: this.props.userOptions.hideTags,
+                                tagPalette: this.props.userOptions.tagColorPalette,
                                 dateFormat: "DD mm yyyy",
                                 taskFiles: this.props.userOptions.taskFiles,
-                                select: this.props.userOptions.select,
+                                select: this.props.userOptions.inbox,
                                 counters: [
                                     {
                                         onClick: () => { this.handleCounterFilterClick('todoFilter') },

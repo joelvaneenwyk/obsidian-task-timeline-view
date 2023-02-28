@@ -10,7 +10,7 @@ const defaultDateProps = {
     date: moment(),
 }
 
-type DateViewProps = Readonly<typeof defaultDateProps> & TodayContentProps;
+type DateViewProps = Readonly<typeof defaultDateProps>;
 
 export class DateView extends React.Component<DateViewProps> {
     render(): React.ReactNode {
@@ -18,40 +18,32 @@ export class DateView extends React.Component<DateViewProps> {
         const isToday = this.props.date.isSame(moment(), 'date');
         return (
             <UserOptionContext.Consumer>{({ dateFormat }) => (
-                < TaskListContext.Consumer >{({ taskList }) => (
-                    <div className={'details' + (isToday ? ' today' : '')} data-year={this.props.date.format("YYYY")} data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
-                        <DateHeader thisDate={this.props.date.format(dateFormat)} />
-                        {isToday ?
-                            <TodayContent /> :
-                            <NormalDateContent date={this.props.date} />}
-                    </div>
-                )}
+                < TaskListContext.Consumer >{({ taskList }) => {
+                    if (!isToday)
+                        return (
+                            <div className={'details'} data-year={this.props.date.format("YYYY")} data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
+                                <DateHeader thisDate={this.props.date.format(dateFormat)} />
+                                <NormalDateContent date={this.props.date} />
+                            </div>
+                        )
+                    else {
+                        return (
+                            <div>
+                                <DateHeader thisDate={this.props.date.format(dateFormat)} />
+                                <TodayFocus />
+                                <Counters />
+                                <QuickEntry />
+                                <div className={'details today'} data-year={this.props.date.format("YYYY")} data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
+                                    <NormalDateContent date={this.props.date} />
+                                </div>
+                            </div>
+                        )
+                    }
+                }}
                 </TaskListContext.Consumer>
             )}
             </UserOptionContext.Consumer >
         )
-    }
-}
-
-const defaultTodayContentProps = {
-}
-type TodayContentProps = Readonly<typeof defaultTodayContentProps> & CountersProps & QuickEntryProps;
-
-class TodayContent extends React.Component<TodayContentProps> {
-    render(): React.ReactNode {
-        return (
-            <div className='content'>
-                <TodayFocus />
-                <Counters />
-                <QuickEntry />
-                <TaskListContext.Consumer>{({ taskList }) =>
-                    taskList.map((t, i) =>
-                        <TaskListContext.Provider value={{ taskList: [t] }} key={i}>
-                            <TaskItemView key={i} />
-                        </TaskListContext.Provider>
-                    )}
-                </TaskListContext.Consumer>
-            </div>)
     }
 }
 
@@ -77,16 +69,15 @@ class NormalDateContent extends React.Component<NormalDateContentProps> {
 
     render(): React.ReactNode {
         return (
-            <TaskListContext.Consumer>{({ taskList }) => {
-                return (
-                    <div className='content'>
-                        {taskList.map((t, i) =>
-                            <TaskListContext.Provider value={{ taskList: [t] }} key={i}>
-                                <TaskItemView key={i} />
-                            </TaskListContext.Provider>
-                        )}
-                    </div>)
-            }}
+            <TaskListContext.Consumer>{({ taskList }) => (
+                <div className='content'>
+                    {taskList.map((t, i) =>
+                        <TaskListContext.Provider value={{ taskList: [t] }} key={i}>
+                            <TaskItemView key={i} />
+                        </TaskListContext.Provider>
+                    )}
+                </div>)
+            }
             </TaskListContext.Consumer>
         )
     }

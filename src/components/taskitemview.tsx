@@ -41,6 +41,7 @@ export class TaskItemView extends React.Component<TaskItemProps, TaskItemState> 
                     const isDailyNote = item.dailyNote;
                     const color = item.fontMatter["color"];
                     const ariaLabel = getFileTitle(item.path);
+                    const tags = [...new Set(item.tags)];
                     return (
                         <TaskItemEventHandlersContext.Consumer>{
                             callbacks => {
@@ -52,7 +53,7 @@ export class TaskItemView extends React.Component<TaskItemProps, TaskItemState> 
                                 }
                                 return (
                                     <UserOptionContext.Consumer>{
-                                        ({ dateFormat }) =>
+                                        ({ dateFormat, hideTags }) =>
                                         (<div data-line={line} data-col={col} data-link={link} data-dailynote={isDailyNote}
                                             className={`task ${item.status}`}
                                             style={{ "--task-color": color || "var(--text-muted)" } as React.CSSProperties} aria-label={ariaLabel}>
@@ -93,8 +94,13 @@ export class TaskItemView extends React.Component<TaskItemProps, TaskItemState> 
                                                             className='priority' ariaLabel={'priority: ' + item.priorityLabel}
                                                             label={item.priorityLabel} icon={Icons.priorityIcon} />}
                                                     <FileBadge filePath={item.path} subPath={item.section.subpath || ""} />
-
-                                                    {item.tags.map((t, i) => <TagBadge tag={t} key={i} />)}
+                                                    {
+                                                        tags.filter(t => !hideTags.includes(t)).map((t, i) => {
+                                                            console.log(hideTags)
+                                                            return < TagBadge tag={t} key={i} />
+                                                        }
+                                                        )
+                                                    }
                                                 </div>
                                             </div>
                                         </div>)}
@@ -137,34 +143,38 @@ type TagBadgeProps = Readonly<typeof defaultTagBadgeProps>;
 class TagBadge extends React.Component<TagBadgeProps> {
 
     render(): React.ReactNode {
-        const tag = this.props.tag;
-        var tagText = tag.replace("#", "");
-        const hexColorMatch = tag.match(TaskRegularExpressions.hexColorRegex);
-        var style: {};
-        if (hexColorMatch) {
-            style = {
-                '--tag-color': `#${hexColorMatch[1]}`,
-                '--tag-background': `#${hexColorMatch[1]}1a`,
-                'zIndex': 9999,
-            };
-            tagText = hexColorMatch[2];
-        } else {
-            style = {
-                '--tag-color': 'var(--text-muted)',
-                'zIndex': 9999,
-            };
-        };
         return (
-            <TaskItemEventHandlersContext.Consumer>{callbacks => (
-                <a href={tag} className={'tag'} target='_blank' rel='noopener' style={style} aria-label={tag}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        callbacks.handleTagClick(tag);
-                    }}>
-                    <div className='icon'>{Icons.tagIcon}</div>
-                    <div className='label'>{tagText}</div>
-                </a>)}
-            </TaskItemEventHandlersContext.Consumer>
+            <UserOptionContext.Consumer>{({ tagPalette }) => {
+                const tag = this.props.tag;
+                var tagText = tag.replace("#", "");
+                var color;
+                if (Object.keys(tagPalette).contains(tag)) color = tagPalette[tag];
+                var style: {};
+                if (color) {
+                    style = {
+                        '--tag-color': color,
+                        '--tag-background': `${color}1a`,
+                        'zIndex': 9999,
+                    };
+                } else {
+                    style = {
+                        '--tag-color': 'var(--text-muted)',
+                        'zIndex': 9999,
+                    };
+                };
+                return (
+                    <TaskItemEventHandlersContext.Consumer>{callbacks => (
+                        <a href={tag} className={'tag'} target='_blank' rel='noopener' style={style} aria-label={tag}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                callbacks.handleTagClick(tag);
+                            }}>
+                            <div className='icon'>{Icons.tagIcon}</div>
+                            <div className='label'>{tagText}</div>
+                        </a>)}
+                    </TaskItemEventHandlersContext.Consumer>)
+            }}
+            </UserOptionContext.Consumer>
         );
     }
 }

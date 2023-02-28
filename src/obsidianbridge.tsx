@@ -1,27 +1,27 @@
 import { App, ItemView, Notice, Pos } from 'obsidian';
 import * as React from 'react';
 import { TaskDataModel, TaskRegularExpressions } from '../../utils/tasks';
-import { TimelineSettings } from '../../utils/options';
 import { CreateNewTaskContext, TaskItemEventHandlersContext, TaskListContext } from './components/context';
 import { TimelineView } from './components/timelineview';
 import { ObsidianTaskAdapter } from './taskadapter';
+import { defaultUserOptions, UserOption } from '../../src/settings'
 
 const defaultObsidianBridgeProps = {
     plugin: {} as ItemView,
+    opt: defaultUserOptions as UserOption,
 }
 const defaultObsidianBridgeState = {
     taskList: [] as TaskDataModel[],
+    userOptions: defaultUserOptions as UserOption,
 }
 type ObsidianBridgeProps = Readonly<typeof defaultObsidianBridgeProps>;
 type ObsidianBridgeState = typeof defaultObsidianBridgeState;
 export class ObsidianBridge extends React.Component<ObsidianBridgeProps, ObsidianBridgeState> {
-    private readonly options: TimelineSettings;
     private readonly adapter: ObsidianTaskAdapter;
     private readonly app: App;
     constructor(props: ObsidianBridgeProps) {
         super(props);
 
-        this.options = Object.assign({}, {}, new TimelineSettings());
         this.app = this.props.plugin.app;
 
         this.handleCreateNewTask = this.handleCreateNewTask.bind(this);
@@ -33,6 +33,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
         this.adapter = new ObsidianTaskAdapter(this.app);
 
         this.state = {
+            userOptions: this.props.opt,
             taskList: [],
         }
     }
@@ -46,10 +47,16 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
         this.adapter.generateTasksList().then(() => {
             this.adapter.parseTasks().then(() => {
                 const tasks = this.adapter.getTaskList();
-                if (this.options.taskFiles.size === 0) {
+                if (this.state.userOptions.taskFiles.length === 0) {
+                    const taskfiles = this.state.userOptions.taskFiles;
                     tasks.forEach(t => {
-                        this.options.taskFiles.add(t.path);
+                        if (taskfiles.contains(t.path)) return;
+                        taskfiles.push(t.path);
                     })
+                    const newOptions = Object.assign({ ...this.state.userOptions }, { taskFiles: taskfiles });
+                    this.setState({
+                        userOptions: newOptions,
+                    });
                 }
                 this.setState({
                     taskList: tasks,
@@ -60,7 +67,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
 
     handleCreateNewTask(path: string, append: string) {
         const taskStr = "- [ ] " + append + "\n";
-        const section = this.options.section;
+        const section = this.state.userOptions.sectionForNewTasks;
         this.app.vault.adapter.exists(path).then(exist => {
             if (!exist && confirm("No such file: " + path + ". Would you like to create it?")) {
                 const content = section + "\n\n" + taskStr;
@@ -148,7 +155,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
                     handleTagClick: this.handleTagClick,
                 }}>
                     <TaskListContext.Provider value={{ taskList: this.state.taskList }}>
-                        <TimelineView userOptions={this.options} />
+                        <TimelineView userOptions={this.state.userOptions} />
                     </TaskListContext.Provider>
                 </TaskItemEventHandlersContext.Provider>
             </CreateNewTaskContext.Provider>

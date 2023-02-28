@@ -3,7 +3,7 @@ import * as React from "react";
 import ReactDOM from 'react-dom/client';
 import ReactDOMServer from 'react-dom/server';
 import { getFileTitle } from '../../../dataview-util/dataview';
-import { Options, TimelineSettings } from '../../../utils/options';
+import { __Options, TimelineSettings } from '../../../utils/options';
 import {
     doneDateSymbol, dueDateSymbol, innerDateFormat, prioritySymbols,
     recurrenceSymbol, scheduledDateSymbol, startDateSymbol, TaskDataModel, TaskMapable, TaskRegularExpressions, TaskStatus
@@ -12,7 +12,7 @@ import * as icons from './asserts/icons';
 import './components/view.css';
 
 export class View {
-    private options: Options;
+    private options: __Options;
     private tasks: TaskDataModel[] = [];
     //private timelineDates: string[] = [];
     private tid: number = (new Date()).getTime();
@@ -24,7 +24,7 @@ export class View {
     constructor(
         container: HTMLElement,
         tasks: TaskDataModel[],
-        options: Options | undefined,
+        options: __Options | undefined,
     ) {
         this.rootNode = ReactDOM.createRoot(container);
 
@@ -127,8 +127,6 @@ export class View {
                                     f.split("/")[f.split("/").length - 2] == null ? "" :
                                         secondParentFolder + "📂&nbsp;" + f.split("/")[f.split("/").length - 2] + " / ";
                                 const filePath = parentFolder + "📄&nbsp;" + getFileTitle(f);
-                                const select: boolean = this.options.select !== undefined &&
-                                    (this.options.select === f || (this.options.select === "dailyNote" && f === currentDailyNote));
 
                                 return (
                                     <option value={f} title={f} key={this.reactKey++}>
