@@ -76,9 +76,7 @@ export class ObsidianTaskAdapter {
      */
     private fromItemCache(link: Link, filePath: string, fileContent: string,
         sections?: SectionCache[], links?: LinkCache[], fontmatter?: FrontMatterCache, tagsCache?: TagCache[]) {
-            console.log(filePath)
         return (item: ListItemCache) => {
-            console.log(item)
             if (!(item.task)) return null;
             const itemPos = item.position;
             const parent = item.parent;
