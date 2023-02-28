@@ -34,6 +34,7 @@ export class ObsidianTaskAdapter {
             .map(TaskMapable.dataviewTaskParser)
             .map(dailyNoteFormatParser)
             .map(TaskMapable.taskLinkParser)
+            .map(TaskMapable.tagsParser)
             .map(TaskMapable.remainderParser)
             .map(TaskMapable.postProcessor)
             .map((t: TaskDataModel) => {
