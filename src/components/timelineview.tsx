@@ -104,7 +104,7 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
                             <UserOptionContext.Provider value={{
                                 hideTags: this.props.userOptions.hideTags,
                                 tagPalette: this.props.userOptions.tagColorPalette,
-                                dateFormat: "DD mm yyyy",
+                                dateFormat: this.props.userOptions.dateFormat,
                                 taskFiles: this.props.userOptions.taskFiles,
                                 select: this.props.userOptions.inbox,
                                 counters: [
