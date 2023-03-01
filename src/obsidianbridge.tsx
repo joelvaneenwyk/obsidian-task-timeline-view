@@ -138,7 +138,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
     handleCompleteTask(path: string, position: Pos) {
         this.app.workspace.openLinkText('', path).then(() => {
             const file = this.app.workspace.getActiveFile();
-            this.app.workspace.getLeaf().openFile(file!, { state: { active: false } });
+            this.app.workspace.getLeaf().openFile(file!, { state: { mode: "source" } });
             this.app.workspace.activeEditor?.editor?.setSelection(
                 { line: position.start.line, ch: position.start.col },
                 { line: position.end.line, ch: position.end.col }
