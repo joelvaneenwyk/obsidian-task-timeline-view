@@ -83,23 +83,24 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
                 if (!this.props.userOptions.useQuickEntry) styles.push("noQuickEntry");
                 if (!this.props.userOptions.useYearHeader) styles.push("noYear");
                 if (!this.props.userOptions.useCompletedTasks) styles.push("noDone");
-                if (!this.props.userOptions.useInfo.useFileBadge &&
-                    !this.props.userOptions.useInfo.usePriority &&
-                    !this.props.userOptions.useInfo.useRecurrence &&
-                    !this.props.userOptions.useInfo.useRelative &&
-                    !this.props.userOptions.useInfo.useSection &&
-                    !this.props.userOptions.useInfo.useTags) styles.push("noInfo");
+                if (!this.props.userOptions.useFileBadge &&
+                    !this.props.userOptions.usePriority &&
+                    !this.props.userOptions.useRecurrence &&
+                    !this.props.userOptions.useRelative &&
+                    !this.props.userOptions.useSection &&
+                    !this.props.userOptions.useTags) styles.push("noInfo");
                 else {
-                    if (!this.props.userOptions.useInfo.useFileBadge) styles.push("noFile");
-                    if (!this.props.userOptions.useInfo.usePriority) styles.push("noPriority");
-                    if (!this.props.userOptions.useInfo.useRecurrence) styles.push("noRepeat");
-                    if (!this.props.userOptions.useInfo.useRelative) styles.push("noRelative");
-                    if (!this.props.userOptions.useInfo.useSection) styles.push("noHeader");
-                    if (!this.props.userOptions.useInfo.useTags) styles.push("noTag");
+                    if (!this.props.userOptions.useFileBadge) styles.push("noFile");
+                    if (!this.props.userOptions.usePriority) styles.push("noPriority");
+                    if (!this.props.userOptions.useRecurrence) styles.push("noRepeat");
+                    if (!this.props.userOptions.useRelative) styles.push("noRelative");
+                    if (!this.props.userOptions.useSection) styles.push("noHeader");
+                    if (!this.props.userOptions.useTags) styles.push("noTag");
                 }
 
                 return (
-                    <div className={`taskido ${styles} ${this.state.filter} ${this.state.todayFocus ? "todayFocus" : ""}`} id={`taskido${(new Date()).getTime()}`}>
+                    <div className={`taskido ${[...new Set(styles)].join(" ")} ${this.state.filter} ${this.state.todayFocus ? "todayFocus" : ""}`}
+                        id={`taskido${(new Date()).getTime()}`}>
                         <TodayFocusEventHandlersContext.Provider value={{ handleTodayFocusClick: this.handleTodayFocus }}>
                             <UserOptionContext.Provider value={{
                                 hideTags: this.props.userOptions.hideTags,

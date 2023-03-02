@@ -10,7 +10,6 @@ export class ObsidianTaskAdapter {
         this.app = app;
 
         this.generateTasksList = this.generateTasksList.bind(this);
-        this.parseTasks = this.parseTasks.bind(this);
         this.getTaskList = this.getTaskList.bind(this);
         this.fromItemCache = this.fromItemCache.bind(this);
         this.fromLine = this.fromLine.bind(this);
@@ -18,35 +17,7 @@ export class ObsidianTaskAdapter {
     }
 
     getTaskList() {
-        return this.tasksList;
-    }
-
-    async parseTasks(taskOrder: Set<string> = new Set(["overdue", "due", "scheduled", "start", "process", "unplanned", "done", "cancelled"])) {
-        const orderMap: Map<string, number> = new Map();
-        [...taskOrder].forEach((value: string, index: number) => {
-            orderMap.set(value, index);
-        });
-
-        const dailyNoteFormatParser = TaskMapable.dailyNoteTaskParser();
-
-        this.tasksList = await this.tasksList
-            .map(TaskMapable.tasksPluginTaskParser)
-            .map(TaskMapable.dataviewTaskParser)
-            .map(dailyNoteFormatParser)
-            .map(TaskMapable.taskLinkParser)
-            .map(TaskMapable.tagsParser)
-            .map(TaskMapable.remainderParser)
-            .map(TaskMapable.postProcessor)
-            .map((t: TaskDataModel) => {
-                t.order = orderMap.get(t.status) || 0;
-                return t;
-            })
-            .map((t: TaskDataModel) => {
-                if (t.status === TaskStatus.unplanned) t.dates.set("unplanned", moment())
-                else if (t.status === TaskStatus.done && !t.completion &&
-                    !t.due && !t.start && !t.scheduled && !t.created) t.dates.set("done-unplanned", moment());
-                return t;
-            });
+        return [...this.tasksList];
     }
 
     async generateTasksList() {
