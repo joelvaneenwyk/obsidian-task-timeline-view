@@ -1,6 +1,6 @@
 import moment, { Moment } from 'moment';
 import * as React from 'react';
-import { UserOption } from '../../../src/settings'
+import { UserOption } from '../../../src/settings';
 import { innerDateFormat, TaskDataModel, TaskMapable, TaskStatus } from '../../../utils/tasks';
 import { TaskListContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
 import { YearView } from './yearview';

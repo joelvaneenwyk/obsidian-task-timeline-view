@@ -3,7 +3,7 @@ import * as React from "react";
 import ReactDOM from 'react-dom/client';
 import ReactDOMServer from 'react-dom/server';
 import { getFileTitle } from '../../../dataview-util/dataview';
-import { __Options, TimelineSettings } from '../../../utils/options';
+import { TimelineSettings, __Options } from '../../../utils/options';
 import {
     doneDateSymbol, dueDateSymbol, innerDateFormat, prioritySymbols,
     recurrenceSymbol, scheduledDateSymbol, startDateSymbol, TaskDataModel, TaskMapable, TaskRegularExpressions, TaskStatus

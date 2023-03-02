@@ -1,11 +1,11 @@
+import { Model } from 'backbone';
 import { App, ItemView, Notice, Pos } from 'obsidian';
 import * as React from 'react';
+import { defaultUserOptions, UserOption } from '../../src/settings';
 import { TaskDataModel, TaskRegularExpressions } from '../../utils/tasks';
 import { CreateNewTaskContext, TaskItemEventHandlersContext, TaskListContext } from './components/context';
 import { TimelineView } from './components/timelineview';
 import { ObsidianTaskAdapter } from './taskadapter';
-import { defaultUserOptions, UserOption } from '../../src/settings'
-import { Model } from 'backbone';
 
 const defaultObsidianBridgeProps = {
     plugin: {} as ItemView,

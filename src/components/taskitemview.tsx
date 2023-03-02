@@ -1,7 +1,7 @@
 import moment, { Moment } from "moment";
 import * as React from "react";
 import { getFileTitle } from "../../../dataview-util/dataview";
-import { recurrenceSymbol, TaskRegularExpressions } from "../../../utils/tasks";
+import { recurrenceSymbol } from "../../../utils/tasks";
 import * as Icons from './asserts/icons';
 import { TaskItemEventHandlersContext, TaskListContext, UserOptionContext } from "./context";
 

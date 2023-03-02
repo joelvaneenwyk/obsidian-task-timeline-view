@@ -1,5 +1,5 @@
 import { Pos } from 'obsidian';
-import * as React from 'react'
+import * as React from 'react';
 import { TaskDataModel } from '../../../utils/tasks';
 import { CounterProps } from './dateview';
 
