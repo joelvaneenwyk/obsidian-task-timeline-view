@@ -5,10 +5,12 @@ import { CreateNewTaskContext, TaskItemEventHandlersContext, TaskListContext } f
 import { TimelineView } from './components/timelineview';
 import { ObsidianTaskAdapter } from './taskadapter';
 import { defaultUserOptions, UserOption } from '../../src/settings'
+import { Model } from 'backbone';
 
 const defaultObsidianBridgeProps = {
     plugin: {} as ItemView,
-    opt: defaultUserOptions as UserOption,
+    userOptionModel: new Model({ ...defaultUserOptions }) as Model,
+    taskListModel: new Model({ taskList: [] as TaskDataModel[] }) as Model,
 }
 const defaultObsidianBridgeState = {
     taskList: [] as TaskDataModel[],
@@ -29,48 +31,37 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
         this.handleOpenFile = this.handleOpenFile.bind(this);
         this.handleCompleteTask = this.handleCompleteTask.bind(this);
         this.onUpdateTasks = this.onUpdateTasks.bind(this);
+        this.onUpdateUserOption = this.onUpdateUserOption.bind(this);
 
         this.adapter = new ObsidianTaskAdapter(this.app);
 
         this.state = {
-            userOptions: { ...this.props.opt },
-            taskList: [],
+            userOptions: { ...(this.props.userOptionModel.pick(this.props.userOptionModel.keys()) as UserOption) },
+            taskList: this.props.taskListModel.get("taskList"),
         }
     }
 
     componentDidMount(): void {
-        this.props.plugin.registerEvent(this.app.metadataCache.on('resolved', this.onUpdateTasks));
-        this.onUpdateTasks();
+
+        this.props.taskListModel.on('change', this.onUpdateTasks)
+        this.props.userOptionModel.on('change', this.onUpdateUserOption)
     }
 
-    async onUpdateTasks() {
-        this.adapter.generateTasksList().then(() => {
-            this.adapter.parseTasks().then(() => {
-                var tasks = this.adapter.getTaskList();
-                if (this.props.opt.useTagFilter) {
-                    tasks = tasks
-                        .filter(task => this.props.opt.taskTagFilters.length === 0 ||
-                            this.props.opt.taskTagFilters.some(t => task.tags.includes(t)))
-                        .filter(task => this.props.opt.fileTagFilters.length === 0 ||
-                            this.props.opt.fileTagFilters.some(t => task.tags.includes(t)));
-                }
+    componentWillUnmount(): void {
+        this.props.taskListModel.off('change', this.onUpdateTasks);
+        this.props.userOptionModel.off('change', this.onUpdateUserOption);
+    }
 
-                if (this.state.userOptions.taskFiles.length === 0) {
-                    const taskfiles = this.state.userOptions.taskFiles;
-                    tasks.forEach(t => {
-                        if (taskfiles.contains(t.path)) return;
-                        taskfiles.push(t.path);
-                    })
-                    const newOptions = Object.assign({ ...this.state.userOptions }, { taskFiles: taskfiles });
-                    this.setState({
-                        userOptions: newOptions,
-                    });
-                }
-                this.setState({
-                    taskList: tasks,
-                })
-            }).catch((reason) => { throw "Error when parsing task items: " + reason; })
-        }).catch((reason) => { throw "Error when generate tasks from vault: " + reason; })
+    onUpdateUserOption() {
+        this.setState({
+            userOptions: { ...(this.props.userOptionModel.pick(this.props.userOptionModel.keys()) as UserOption) }
+        })
+    }
+
+    onUpdateTasks() {
+        this.setState({
+            taskList: this.props.taskListModel.get("taskList"),
+        })
     }
 
     handleCreateNewTask(path: string, append: string) {

@@ -24,8 +24,12 @@ export class YearView extends React.Component<YearViewProps> {
                         daysOfThisYear.add(d.format(innerDateFormat));
                     });
                 })
-                if (this.props.year === moment().year() && daysOfThisYear.size === 0)
+                if (this.props.year === moment().year()) {
+                    /**
+                     * Today is promised to be in the date list
+                     */
                     daysOfThisYear.add(moment().format(innerDateFormat));
+                }
                 return (
                     <div>
                         <YearHeader year={this.props.year} dataTypes={tasksOfThisYear.map(t => t.status)} />
