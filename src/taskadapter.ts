@@ -51,10 +51,22 @@ export class ObsidianTaskAdapter {
             const itemPos = item.position;
             const parent = item.parent;
 
-            const findParent = (parent: number) => {
-                if (parent < 0 || !sections) return null;
-                for (let s of sections) {
-                    if (s.position.start.line === parent) return s;
+            const findParent = () => {
+                if(!sections)return null;
+                if(item.parent > 0){
+                    for (let s of sections) {
+                        if (s.position.start.line === item.parent) return s;
+                    }
+                }else{
+                    let p = -1;
+                    let parentHeader = null;
+                    for(let s of sections){
+                        if(s.type === "heading" && s.position.start.line > p && s.position.start.line < item.position.start.line){
+                            parentHeader = s;
+                            p = parentHeader.position.start.line;
+                        }
+                    }
+                    return parentHeader;
                 }
                 return null;
             };
@@ -74,7 +86,7 @@ export class ObsidianTaskAdapter {
             };
 
             const itemText = sliceFileContent(itemPos);
-            const parentItem = findParent(parent);
+            const parentItem = findParent();
             const outLinks = findOutLinks(itemPos.start.line);
             const parentLink = (!!parentItem) ?
                 link.withSectionCache(parentItem, sliceFileContent(parentItem?.position)) : link;

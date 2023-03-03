@@ -191,7 +191,7 @@ class FileBadge extends React.Component<FileBadgeProps> {
             <div className='file' aria-label={filePath}>
                 <div className='icon'>{Icons.fileIcon}</div>
                 <div className='label'>{fileName}</div>
-                <span className='header'>{subPath}</span>
+                <span className='header'>{subPath != "" ? "  >  " + subPath : subPath}</span>
             </div>)
     }
 }
