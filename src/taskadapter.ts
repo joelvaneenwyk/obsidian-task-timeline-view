@@ -49,19 +49,18 @@ export class ObsidianTaskAdapter {
         return (item: ListItemCache) => {
             if (!(item.task)) return null;
             const itemPos = item.position;
-            const parent = item.parent;
 
             const findParent = () => {
-                if(!sections)return null;
-                if(item.parent > 0){
+                if (!sections) return null;
+                if (item.parent > 0) {
                     for (let s of sections) {
                         if (s.position.start.line === item.parent) return s;
                     }
-                }else{
+                } else {
                     let p = -1;
                     let parentHeader = null;
-                    for(let s of sections){
-                        if(s.type === "heading" && s.position.start.line > p && s.position.start.line < item.position.start.line){
+                    for (let s of sections) {
+                        if (s.type === "heading" && s.position.start.line > p && s.position.start.line < item.position.start.line) {
                             parentHeader = s;
                             p = parentHeader.position.start.line;
                         }
@@ -152,6 +151,17 @@ export class ObsidianTaskAdapter {
         if (blockLink !== '') {
             description = description.replace(TaskRegularExpressions.blockLinkRegex, '').trim();
         }
+
+        if (!!fontMatter) {
+            if (!!fontMatter["tag"] && typeof (fontMatter["tag"]) === "string") {
+                tags.push(fontMatter["tag"]);
+            }
+            if (!!fontMatter["tags"] && typeof (fontMatter["tags"]) === typeof (new Array<string>())) {
+                (fontMatter["tags"] as unknown as Array<string>).forEach(t => tags.push(t));
+            }
+        }
+
+        tags = [...new Set(tags)];
 
         const taskItem: TaskDataModel = {
             symbol: listMarker,
