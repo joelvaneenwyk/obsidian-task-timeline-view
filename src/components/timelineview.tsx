@@ -98,6 +98,17 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
                     if (!this.props.userOptions.useTags) styles.push("noTag");
                 }
 
+                const quickEntryFiles = new Set(this.props.userOptions.taskFiles);
+                if (this.props.userOptions.inbox && this.props.userOptions.inbox !== '')
+                    quickEntryFiles.add(this.props.userOptions.inbox);
+                const dailyNoteFileName = moment().format(this.props.userOptions.dailyNoteFormat) + ".md";
+                const daileNoteFolder =
+                    this.props.userOptions.dailyNoteFolder === '' ?
+                        '' : this.props.userOptions.dailyNoteFolder.endsWith('/') ?
+                            this.props.userOptions.dailyNoteFolder : this.props.userOptions.dailyNoteFolder + '/';
+                if (this.props.userOptions.dailyNoteFormat && this.props.userOptions.dailyNoteFormat !== '')
+                    quickEntryFiles.add(daileNoteFolder + dailyNoteFileName);
+
                 return (
                     <div className={`taskido ${[...new Set(styles)].join(" ")} ${this.state.filter} ${this.state.todayFocus ? "todayFocus" : ""}`}
                         id={`taskido${(new Date()).getTime()}`}>
@@ -106,7 +117,7 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
                                 hideTags: this.props.userOptions.hideTags,
                                 tagPalette: this.props.userOptions.tagColorPalette,
                                 dateFormat: this.props.userOptions.dateFormat,
-                                taskFiles: this.props.userOptions.taskFiles,
+                                taskFiles: [...quickEntryFiles],
                                 select: this.props.userOptions.inbox,
                                 counters: [
                                     {
