@@ -19,10 +19,42 @@ export class ObsidianTaskAdapter {
         return [...this.tasksList];
     }
 
-    async generateTasksList() {
+    pathsFilter(filter: string[]) {
+        return (file: TFile) => {
+            const fileName = file.path;
+            const parent = file.parent.path;
+            return !filter.some((path) => path === fileName || path === parent);
+        }
+    }
+
+    fileIncludeTagsFilter(filter: string[]) {
+        return (file: TFile) => {
+            const cache = this.app.metadataCache.getFileCache(file);
+            const tags = cache?.tags?.map(t => t.tag);
+            return filter.some(tag => tags?.includes(tag));
+        }
+    }
+
+    fileExcludeTagsFilter(filter: string[]) {
+        return (file: TFile) => {
+            const cache = this.app.metadataCache.getFileCache(file);
+            const tags = cache?.tags?.map(t => t.tag);
+            return filter.every(tag => !tags?.includes(tag));
+        }
+    }
+
+    async generateTasksList(pathFilter: string[], includeTags: string[], excludeTags: string[]) {
         this.tasksList.length = 0;
-        const files = app.vault.getMarkdownFiles();
-        await files.forEach(async (file: TFile) => {
+        const files = app.vault.getMarkdownFiles()
+        var filteredFiles = files;
+        if (pathFilter.length !== 0)
+            filteredFiles = filteredFiles.filter(this.pathsFilter(pathFilter));
+        if (includeTags.length !== 0)
+            filteredFiles = filteredFiles.filter(this.fileIncludeTagsFilter(includeTags));
+        if (excludeTags.length !== 0)
+            filteredFiles = filteredFiles.filter(this.fileExcludeTagsFilter(excludeTags));
+
+        await filteredFiles.forEach(async (file: TFile) => {
             const link = Link.file(file.path);
             const fileContent = await this.app.vault.cachedRead(file);
             const cache = this.app.metadataCache.getFileCache(file);
