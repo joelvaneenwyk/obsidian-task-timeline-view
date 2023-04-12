@@ -51,6 +51,9 @@ export class TaskItemView extends React.Component<TaskItemProps, TaskItemState> 
                                 const onCompleteTask = () => {
                                     callbacks.handleCompleteTask(item.path, item.position);
                                 }
+                                const onModifyTask = () => {
+                                    callbacks.handleModifyTask(item.path, item.position);
+                                }
                                 return (
                                     <UserOptionContext.Consumer>{
                                         ({ dateFormat, hideTags }) =>
@@ -63,6 +66,7 @@ export class TaskItemView extends React.Component<TaskItemProps, TaskItemState> 
                                                     <div className='content'>{display}</div>
                                                 </a>
                                                 <div className='line info'>
+                                                    <ModifyBadge onClick={onModifyTask}></ModifyBadge>
                                                     {item.created &&
                                                         <DateStatusBadge //onClick={openTaskFile}
                                                             className='relative' ariaLabel={"create at " + item.created.format(dateFormat)}
@@ -219,5 +223,17 @@ class DateStatusBadge extends React.Component<BadgeProps> {
                 <div className='label'>{label}</div>
             </div>
         );
+    }
+}
+
+const defaultModifyBadgeProps = {
+    onClick: () => { }
+};
+type ModifyBadgeProps = Readonly<typeof defaultModifyBadgeProps>;
+class ModifyBadge extends React.Component<ModifyBadgeProps> {
+    render(): React.ReactNode {
+        return (
+            <div aria-label="Modify Task" onClick={this.props.onClick}>✏️</div>
+        )
     }
 }
