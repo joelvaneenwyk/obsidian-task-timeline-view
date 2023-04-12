@@ -75,7 +75,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
                         this.onUpdateTasks();
                     })
                     .catch(reason => {
-                        return new Notice("Error when creating file " + path + " for new task: " + reason);
+                        return new Notice("Error when creating file " + path + " for new task: " + reason, 5000);
                     });
                 return;
             }
@@ -122,7 +122,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
                 }
             })
         }).catch(reason => {
-            new Notice("Something went wrong: " + reason);
+            new Notice("Something went wrong: " + reason, 5000);
         })
     }
 
