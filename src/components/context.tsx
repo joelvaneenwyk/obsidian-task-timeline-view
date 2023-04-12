@@ -28,5 +28,5 @@ export const TaskItemEventHandlersContext = React.createContext({
     handleOpenFile: (filePath: string, position: Pos) => { },
     handleCompleteTask: (filePath: string, position: Pos) => { },
     handleTagClick: (tag: string) => { },
-    handleModifyTask: (filePath: string, position: Pos) => { },
+    handleModifyTask: undefined as any,
 })

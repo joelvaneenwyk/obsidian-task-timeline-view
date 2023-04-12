@@ -164,7 +164,9 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
                     handleOpenFile: this.handleOpenFile,
                     handleCompleteTask: this.handleCompleteTask,
                     handleTagClick: this.handleTagClick,
-                    handleModifyTask: this.handleModifyTask,
+                    // pass an undefined if the obsidian-tasks-plugin not installed
+                    //@ts-ignore
+                    handleModifyTask: this.app.plugins.plugins['obsidian-tasks-plugin'] === undefined ? undefined : this.handleModifyTask,
                 }}>
                     <TaskListContext.Provider value={{ taskList: this.state.taskList }}>
                         <TimelineView userOptions={this.state.userOptions} />

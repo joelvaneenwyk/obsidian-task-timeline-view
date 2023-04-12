@@ -66,7 +66,8 @@ export class TaskItemView extends React.Component<TaskItemProps, TaskItemState> 
                                                     <div className='content'>{display}</div>
                                                 </a>
                                                 <div className='line info'>
-                                                    <ModifyBadge onClick={onModifyTask}></ModifyBadge>
+                                                    {callbacks.handleModifyTask &&
+                                                        <ModifyBadge onClick={onModifyTask}></ModifyBadge>}
                                                     {item.created &&
                                                         <DateStatusBadge //onClick={openTaskFile}
                                                             className='relative' ariaLabel={"create at " + item.created.format(dateFormat)}
