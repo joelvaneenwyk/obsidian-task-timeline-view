@@ -32,6 +32,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
         this.handleCompleteTask = this.handleCompleteTask.bind(this);
         this.onUpdateTasks = this.onUpdateTasks.bind(this);
         this.onUpdateUserOption = this.onUpdateUserOption.bind(this);
+        this.handleModifyTask = this.handleModifyTask.bind(this);
 
         this.adapter = new ObsidianTaskAdapter(this.app);
 
@@ -101,7 +102,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
         search.openGlobalSearch('tags:' + tag)
     }
 
-    handleOpenFile(path: string, position: Pos) {
+    handleOpenFile(path: string, position: Pos, openTaskEdit: boolean = false) {
         this.app.vault.adapter.exists(path).then(exist => {
             if (!exist) {
                 new Notice("No such file: " + path, 5000);
@@ -117,6 +118,13 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
                     )
                     if (!this.app.workspace.activeEditor?.editor?.hasFocus())
                         this.app.workspace.activeEditor?.editor?.focus();
+                    if (openTaskEdit) {
+                        const editor = this.app.workspace.activeEditor?.editor!;
+                        const view = this.app.workspace.getLeaf().view;
+                        //@ts-ignore
+                        this.app.commands.commands['obsidian-tasks-plugin:edit-task']
+                            .editorCheckCallback(false, editor, view);
+                    }
                 } catch (err) {
                     new Notice("Error when trying open file: " + err, 5000);
                 }
@@ -124,6 +132,10 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
         }).catch(reason => {
             new Notice("Something went wrong: " + reason, 5000);
         })
+    }
+
+    handleModifyTask(path: string, position: Pos) {
+        this.handleOpenFile(path, position, true);
     }
 
     handleCompleteTask(path: string, position: Pos) {
@@ -152,6 +164,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
                     handleOpenFile: this.handleOpenFile,
                     handleCompleteTask: this.handleCompleteTask,
                     handleTagClick: this.handleTagClick,
+                    handleModifyTask: this.handleModifyTask,
                 }}>
                     <TaskListContext.Provider value={{ taskList: this.state.taskList }}>
                         <TimelineView userOptions={this.state.userOptions} />

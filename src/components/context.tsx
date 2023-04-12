@@ -27,5 +27,6 @@ export const TodayFocusEventHandlersContext = React.createContext({
 export const TaskItemEventHandlersContext = React.createContext({
     handleOpenFile: (filePath: string, position: Pos) => { },
     handleCompleteTask: (filePath: string, position: Pos) => { },
-    handleTagClick: (tag: string) => {},
+    handleTagClick: (tag: string) => { },
+    handleModifyTask: (filePath: string, position: Pos) => { },
 })
