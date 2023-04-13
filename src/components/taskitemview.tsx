@@ -99,7 +99,7 @@ export class TaskItemView extends React.Component<TaskItemProps, TaskItemState> 
                                                             className='priority' ariaLabel={'priority: ' + item.priorityLabel}
                                                             label={item.priorityLabel} icon={Icons.priorityIcon} />}
                                                     <FileBadge filePath={item.path} subPath={item.section.subpath || ""} />
-                                                    {tags.filter(t => !hideTags.includes(t)).map((t, i) => {
+                                                    {[...new Set(tags)].filter(t => !hideTags.includes(t)).map((t, i) => {
                                                         return < TagBadge tag={t} key={i} />
                                                     }
                                                     )}
