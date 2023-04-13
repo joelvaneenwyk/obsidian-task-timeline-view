@@ -99,7 +99,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
         //@ts-ignore
         const searchPlugin = this.app.internalPlugins.getPluginById("global-search");
         const search = searchPlugin && searchPlugin.instance;
-        search.openGlobalSearch('tags:' + tag)
+        search.openGlobalSearch('tag:' + tag)
     }
 
     handleOpenFile(path: string, position: Pos, openTaskEdit: boolean = false) {
