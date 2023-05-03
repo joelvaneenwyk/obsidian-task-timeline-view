@@ -32,7 +32,7 @@ export class YearView extends React.Component<YearViewProps> {
                 }
                 return (
                     <div>
-                        <YearHeader year={this.props.year} dataTypes={tasksOfThisYear.map(t => t.status)} />
+                        <YearHeader year={this.props.year} dataTypes={[...new Set(tasksOfThisYear.map(t => t.status))]} />
                         {[...daysOfThisYear].sort().map((d, i) => {
                             const tasksOfThisDate = tasksOfThisYear.filter(TaskMapable.filterDate(moment(d)));
                             return (
