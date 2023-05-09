@@ -141,8 +141,8 @@ class Content extends React.Component<ContentProps> {
         }
         return blocks.map((b, i) => {
             return b.normal ? <a key={i}>{b.display}</a> :
-                b.inner ? <a key={i} className="internal-link" aria-label={b.path} href={b.path}>{b.display}</a> :
-                    <a key={i} className="external-link" aria-label={b.path} href={b.path}>{b.display}</a>
+                b.inner ? <a key={i} className="innerLink" aria-label={b.path} href={b.path}>{b.display}</a> :
+                    <a key={i} className="outerLink" aria-label={b.path} href={b.path}>{b.display}</a>
         })
 
     }
