@@ -3,8 +3,9 @@ import * as React from 'react';
 import { getFileTitle } from '../../../dataview-util/dataview';
 import { doneDateSymbol, dueDateSymbol, prioritySymbols, recurrenceSymbol, scheduledDateSymbol, startDateSymbol } from '../../../utils/tasks';
 import * as Icons from './asserts/icons';
-import { CreateNewTaskContext, TaskListContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
+import { QuickEntryHandlerContext, TaskListContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
 import { TaskItemView } from './taskitemview';
+import { useState } from 'react';
 
 const defaultDateProps = {
     date: moment(),
@@ -19,26 +20,22 @@ export class DateView extends React.Component<DateViewProps> {
         return (
             <UserOptionContext.Consumer>{({ dateFormat }) => (
                 < TaskListContext.Consumer >{({ taskList }) => {
-                    if (!isToday)
-                        return (
-                            <div className={'details'} data-year={this.props.date.format("YYYY")} data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
-                                <DateHeader thisDate={this.props.date.format(dateFormat)} />
+                    return (
+                        <div className={isToday ? "details today" : "details"}
+                            data-year={this.props.date.format("YYYY")}
+                            data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
+                            <DateHeader thisDate={this.props.date.format(dateFormat)} />
+                            {isToday && <TodayFocus />}
+                            {isToday && <Counters />}
+                            {isToday && <QuickEntry />}
+                            <div className={isToday ? "details today" : "details"}
+                                data-year={this.props.date.format("YYYY")}
+                                data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
                                 <NormalDateContent date={this.props.date} />
                             </div>
-                        )
-                    else {
-                        return (
-                            <div>
-                                <DateHeader thisDate={this.props.date.format(dateFormat)} />
-                                <TodayFocus />
-                                <Counters />
-                                <QuickEntry />
-                                <div className={'details today'} data-year={this.props.date.format("YYYY")} data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
-                                    <NormalDateContent date={this.props.date} />
-                                </div>
-                            </div>
-                        )
-                    }
+                        </div>
+                    )
+
                 }}
                 </TaskListContext.Consumer>
             )}
@@ -83,22 +80,23 @@ class NormalDateContent extends React.Component<NormalDateContentProps> {
     }
 }
 
-const defaultQuickEntryProps = {
-};
 
-type QuickEntryProps = Readonly<typeof defaultQuickEntryProps>;
 const defaultQuickEntryState = {
     selectedFile: "" as string,
+    action: "append" as string,
+    filters: [] as string[],
 };
 type QuickEntryState = typeof defaultQuickEntryState;
 
-class QuickEntry extends React.Component<QuickEntryProps, QuickEntryState> {
-    private newTaskInput;
+class QuickEntry extends React.Component<{}, QuickEntryState> {
+    private textInput;
     private fileSecect;
     private okButton;
     private quickEntryPanel;
-    constructor(props: QuickEntryProps) {
-        super(props);
+    private dateFilter: string[] = new Array<string>(2);
+    private priorityFilter: string[] = new Array<string>;
+    constructor(none: { }) {
+        super(none);
 
         this.onQuickEntryFileSelectChange = this.onQuickEntryFileSelectChange.bind(this);
         this.onQuickEntryNewTaskInput = this.onQuickEntryNewTaskInput.bind(this);
@@ -106,22 +104,27 @@ class QuickEntry extends React.Component<QuickEntryProps, QuickEntryState> {
         this.onQuickEntryPanelBlur = this.onQuickEntryPanelBlur.bind(this);
         this.onQuickEntryPanelFocus = this.onQuickEntryPanelFocus.bind(this);
 
-        this.newTaskInput = React.createRef<HTMLInputElement>();
+
+        this.textInput = React.createRef<HTMLInputElement>();
         this.fileSecect = React.createRef<HTMLSelectElement>();
         this.okButton = React.createRef<HTMLButtonElement>();
         this.quickEntryPanel = React.createRef<HTMLDivElement>();
 
         this.state = {
             selectedFile: "",
+            action: "append",
+            filters: [],
         }
+
     }
+
 
     onQuickEntryFileSelectChange() {
         if (!this.fileSecect.current) return;
         this.setState({
             selectedFile: this.fileSecect.current?.value,
         })
-        this.newTaskInput.current?.focus();
+        this.textInput.current?.focus();
     }
 
     onQuickEntryNewTaskKeyUp(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -130,7 +133,7 @@ class QuickEntry extends React.Component<QuickEntryProps, QuickEntryState> {
     }
 
     onQuickEntryNewTaskInput() {
-        const input = this.newTaskInput.current;
+        const input = this.textInput.current;
         if (!input) return;
         const newTask = input.value;
         // Icons
@@ -182,52 +185,155 @@ class QuickEntry extends React.Component<QuickEntryProps, QuickEntryState> {
     }
 
     render(): React.ReactNode {
-
+        const filterNames = ['+', "date", "priority"]
         return (
             <div className='quickEntryPanel' ref={this.quickEntryPanel}>
                 <div className='left'>
-                    <UserOptionContext.Consumer>{({ taskFiles }) => {
-                        return (
-                            <select className='fileSelect' ref={this.fileSecect} aria-label='Select a note to add a new task to'
+                    <div className='actionSelect'>
+                        <select name='Action' className='actionName' value={this.state.action} onChange={(event) => {
+                            this.setState({ action: event.target.value })
+                            if (this.textInput.current)
+                                this.textInput.current.value = ""
+                        }}>
+                            <option value={"append"} key={1}>New Task</option>
+                            <option value={"filter"} key={2}>Filter</option>
+                        </select>
+                        {this.state.action === "append"
+                            ?
+                            <select name='File name' className='fileSelect' ref={this.fileSecect} aria-label='Select a note to add a new task to'
                                 onChange={this.onQuickEntryFileSelectChange} value={this.state.selectedFile}>
-                                {[...taskFiles].map((f, i) => {
-                                    const secondParentFolder =
-                                        !(f.split("/")[f.split("/").length - 3]) ? "" : "… / ";
-                                    const parentFolder =
-                                        !(f.split("/")[f.split("/").length - 2]) ? "" :
-                                            (secondParentFolder + "📂 " + f.split("/")[f.split("/").length - 2] + " / ");
-                                    const filePath = parentFolder + "📄 " + getFileTitle(f);
-                                    return (
-                                        <option style={{ whiteSpace: "nowrap" }} value={f} title={f} key={i}>
-                                            {filePath}
-                                        </option>);
-                                })}
-                            </select>);
-                    }}
-                    </UserOptionContext.Consumer>
-                    <input className='newTask' type='text' placeholder='Enter your tasks here' ref={this.newTaskInput}
-                        onInput={this.onQuickEntryNewTaskInput} onKeyUp={this.onQuickEntryNewTaskKeyUp}
-                        onFocus={this.onQuickEntryPanelFocus} onBlur={this.onQuickEntryPanelBlur} />
+                                <UserOptionContext.Consumer>{({ taskFiles }) =>
+                                    [...taskFiles].map((f, i) => {
+                                        const secondParentFolder =
+                                            !(f.split("/")[f.split("/").length - 3]) ? "" : "… / ";
+                                        const parentFolder =
+                                            !(f.split("/")[f.split("/").length - 2]) ? "" :
+                                                (secondParentFolder + "📂 " + f.split("/")[f.split("/").length - 2] + " / ");
+                                        const filePath = parentFolder + "📄 " + getFileTitle(f);
+                                        return (
+                                            <option style={{ whiteSpace: "nowrap" }} value={f} title={f} key={i}>
+                                                {filePath}
+                                            </option>);
+                                    })
+                                }
+                                </UserOptionContext.Consumer>
+                            </select>
+                            :
+                            <MultiSelect key={0} name='Filter Type'
+                                className='filterSelector'
+                                options={filterNames}
+                                fallbackValueIndex={0}
+                                selectChangeHandler={res => { this.setState({ filters: res }) }}
+                                visual={['➕', 'date', 'priority']} />
+
+                        }
+
+                    </div>
+
+                    <div className='left'>
+                        {this.state.action === "append" ?
+                            <input className='newTask' type='text' placeholder='Enter your tasks here' ref={this.textInput}
+                                onInput={this.onQuickEntryNewTaskInput} onKeyUp={this.onQuickEntryNewTaskKeyUp}
+                                onFocus={this.onQuickEntryPanelFocus} onBlur={this.onQuickEntryPanelBlur} />
+                            :
+                            <div className='left'>
+                                {this.state.filters.map((f, i) => {
+                                    if (f === 'date') {
+                                        return <div key={i} className='dateFilter'>
+                                            <a key={0}>From: </a><input key={1} type='date' onChange={e => this.dateFilter[0] = e.target.value} />
+                                            <a key={2}>  To: </a><input key={3} type='date' onChange={e => this.dateFilter[1] = e.target.value} />
+                                        </div>
+                                    } else if (f === 'priority') {
+                                        return <div key={i} className='actionSelect'>
+                                            <a>Priorities: </a><MultiSelect key={1} name='priorityFilter' className=''
+                                                options={['+', '1', '2', '3', '4']} visual={['➕', 'High', 'Medium', 'None', 'Low']}
+                                                fallbackValueIndex={0} selectChangeHandler={(res) => { this.priorityFilter = res; }} />
+                                        </div>
+                                    } return <div key={i} />
+                                })
+                                }
+                            </div>
+                        }
+                    </div>
                 </div>
+
                 <div className='right'>
-                    <CreateNewTaskContext.Consumer>{callback => (
+                    <QuickEntryHandlerContext.Consumer>{callback => (
                         <button className='ok' ref={this.okButton} aria-label='Append new task to selected note'
                             onClick={() => {
-                                const filePath = this.state.selectedFile;
-                                const newTask = this.newTaskInput.current?.value;
-                                if (!newTask || !filePath) return;
-                                if (newTask.length > 1) {
-                                    callback.handleCreateNewTask(filePath, newTask);
+                                if (this.state.action === 'append') {
+                                    const filePath = this.state.selectedFile;
+                                    const newTask = this.textInput.current?.value;
+                                    if (!newTask || !filePath) return;
+                                    if (newTask.length > 1) {
+                                        callback.handleCreateNewTask(filePath, newTask);
+                                    } else {
+                                        this.textInput.current?.focus();
+                                    };
                                 } else {
-                                    this.newTaskInput.current?.focus();
-                                };
+                                    callback.handleFilterEnable(this.dateFilter[0], this.dateFilter[1], this.priorityFilter);
+                                }
                             }}>
                             {Icons.buttonIcon}
                         </button>)}
-                    </CreateNewTaskContext.Consumer>
+                    </QuickEntryHandlerContext.Consumer>
                 </div>
-            </div>
+            </div >
         );
+    }
+}
+
+const multiSelectProps = {
+    name: "" as string,
+    className: "" as string,
+    options: [] as string[],
+    visual: [] as string[],
+    selectChangeHandler: {} as (options: string[]) => void,
+    fallbackValueIndex: 0 as number,
+}
+type MultiSelectProps = typeof multiSelectProps;
+const multiSelectStates = {
+    results: [] as string[],
+}
+type MultiSelectStates = Readonly<typeof multiSelectStates>;
+class MultiSelect extends React.Component<MultiSelectProps, MultiSelectStates> {
+    private selectElem;
+    constructor(props: MultiSelectProps) {
+        super(props);
+        this.selectElem = React.createRef<HTMLSelectElement>();
+        this.state = {
+            results: []
+        };
+    }
+    render(): React.ReactNode {
+        return (
+            <div className='left MultiSelect'>
+                <div>{this.state.results.map(f => "🎯" + this.props.visual[this.props.options.indexOf(f)]).join("; ")}</div>
+                <select name={this.props.name} className={this.props.className} ref={this.selectElem}
+                    onClick={() => {
+                        if (this.selectElem.current !== null)
+                            this.selectElem.current.selectedIndex = this.props.fallbackValueIndex;
+                    }}
+                    onChange={(e) => {
+                        const idx = e.target.selectedIndex;
+                        if (idx === this.props.fallbackValueIndex) return;
+                        const value = this.props.options[idx];
+                        const results = this.state.results;
+                        if (results.includes(value)) results.remove(value);
+                        else results.push(value);
+                        this.setState({ results: results });
+                        this.props.selectChangeHandler(results);
+                    }}>
+                    {this.props.options
+                        //.filter((_, i) => i !== this.props.fallbackValueIndex)
+                        .map((n, i) =>
+                            <option value={n} key={i}>
+                                {(this.state.results.includes(n) ? "🎯" : " ") + this.props.visual[i]}
+                            </option>
+                        )}
+                </select>
+            </div>
+        )
     }
 }
 
