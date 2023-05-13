@@ -1,9 +1,10 @@
 import { Model } from 'backbone';
+import moment from 'moment';
 import { App, ItemView, Notice, Pos } from 'obsidian';
 import * as React from 'react';
 import { defaultUserOptions, UserOption } from '../../src/settings';
-import { TaskDataModel, TaskRegularExpressions } from '../../utils/tasks';
-import { CreateNewTaskContext, TaskItemEventHandlersContext, TaskListContext } from './components/context';
+import { TaskDataModel, TaskMapable, TaskRegularExpressions } from '../../utils/tasks';
+import { QuickEntryHandlerContext, TaskItemEventHandlersContext, TaskListContext } from './components/context';
 import { TimelineView } from './components/timelineview';
 import { ObsidianTaskAdapter } from './taskadapter';
 
@@ -19,7 +20,7 @@ const defaultObsidianBridgeState = {
 type ObsidianBridgeProps = Readonly<typeof defaultObsidianBridgeProps>;
 type ObsidianBridgeState = typeof defaultObsidianBridgeState;
 export class ObsidianBridge extends React.Component<ObsidianBridgeProps, ObsidianBridgeState> {
-    private readonly adapter: ObsidianTaskAdapter;
+    //private readonly adapter: ObsidianTaskAdapter;
     private readonly app: App;
     constructor(props: ObsidianBridgeProps) {
         super(props);
@@ -33,8 +34,9 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
         this.onUpdateTasks = this.onUpdateTasks.bind(this);
         this.onUpdateUserOption = this.onUpdateUserOption.bind(this);
         this.handleModifyTask = this.handleModifyTask.bind(this);
+        this.handleFilterEnable = this.handleFilterEnable.bind(this);
 
-        this.adapter = new ObsidianTaskAdapter(this.app);
+        //this.adapter = new ObsidianTaskAdapter(this.app);
 
         this.state = {
             userOptions: { ...(this.props.userOptionModel.pick(this.props.userOptionModel.keys()) as UserOption) },
@@ -63,6 +65,22 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
         this.setState({
             taskList: this.props.taskListModel.get("taskList"),
         })
+    }
+
+    handleFilterEnable(startDate: string, endDate: string, priorities: string[]) {
+
+        var taskList: TaskDataModel[] = this.props.taskListModel.get("taskList");
+  
+        if (startDate && startDate !== "" && endDate && endDate !== "") {
+            taskList = taskList
+                .filter(TaskMapable.filterDateRange(moment(startDate), moment(endDate)))
+        }
+        if (priorities.length !== 0) {
+            taskList = taskList.filter((t: TaskDataModel) => priorities.includes(t.priority));
+        }
+        this.setState({
+            taskList: taskList
+        });
     }
 
     handleCreateNewTask(path: string, append: string) {
@@ -159,7 +177,11 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
     render(): React.ReactNode {
         console.log("Now the root node are rendering with: ", this.state.taskList)
         return (
-            <CreateNewTaskContext.Provider value={{ handleCreateNewTask: this.handleCreateNewTask }}>
+            <QuickEntryHandlerContext.Provider
+                value={{
+                    handleCreateNewTask: this.handleCreateNewTask,
+                    handleFilterEnable: this.handleFilterEnable
+                }}>
                 <TaskItemEventHandlersContext.Provider value={{
                     handleOpenFile: this.handleOpenFile,
                     handleCompleteTask: this.handleCompleteTask,
@@ -172,7 +194,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
                         <TimelineView userOptions={this.state.userOptions} />
                     </TaskListContext.Provider>
                 </TaskItemEventHandlersContext.Provider>
-            </CreateNewTaskContext.Provider>
+            </QuickEntryHandlerContext.Provider>
         )
     }
 }
