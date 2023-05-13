@@ -16,8 +16,9 @@ export const UserOptionContext = React.createContext({
     hideTags: [] as string[],
 });
 
-export const CreateNewTaskContext = React.createContext({
+export const QuickEntryHandlerContext = React.createContext({
     handleCreateNewTask: (filePath: string, content: string) => { },
+    handleFilterEnable: (startDate: string, enddate: string, priorities: string[]) => { },
 });
 
 export const TodayFocusEventHandlersContext = React.createContext({
