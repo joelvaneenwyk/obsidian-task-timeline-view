@@ -2,9 +2,11 @@ import { Pos } from 'obsidian';
 import * as React from 'react';
 import { TaskDataModel } from '../../../utils/tasks';
 import { CounterProps } from './dateview';
+import moment from 'moment';
 
 export const TaskListContext = React.createContext({
     taskList: [] as TaskDataModel[],
+    entryOnDate: moment().toString() as string,
 })
 
 export const UserOptionContext = React.createContext({
