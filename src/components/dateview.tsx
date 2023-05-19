@@ -5,7 +5,6 @@ import { doneDateSymbol, dueDateSymbol, prioritySymbols, recurrenceSymbol, sched
 import * as Icons from './asserts/icons';
 import { QuickEntryHandlerContext, TaskListContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
 import { TaskItemView } from './taskitemview';
-import { useState } from 'react';
 
 const defaultDateProps = {
     date: moment(),
@@ -15,23 +14,26 @@ type DateViewProps = Readonly<typeof defaultDateProps>;
 
 export class DateView extends React.Component<DateViewProps> {
     render(): React.ReactNode {
-
-        const isToday = this.props.date.isSame(moment(), 'date');
         return (
             <UserOptionContext.Consumer>{({ dateFormat }) => (
-                < TaskListContext.Consumer >{({ taskList }) => {
+                < TaskListContext.Consumer >{({ taskList, entryOnDate }) => {
+                    const entryOnDateMoment = moment(entryOnDate);
+                    const isEntryDate = this.props.date.format("YYYYMMDD") === entryOnDateMoment.format("YYYYMMDD");
+                    const isToday = this.props.date.isSame(moment(), 'date');
                     return (
-                        <div className={isToday ? "details today" : "details"}
-                            data-year={this.props.date.format("YYYY")}
-                            data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
-                            <DateHeader thisDate={this.props.date.format(dateFormat)} />
-                            {isToday && <TodayFocus />}
-                            {isToday && <Counters />}
-                            {isToday && <QuickEntry />}
+                        <div>
+                            {isEntryDate && <TodayFocus visual={isToday ? "Today" : entryOnDateMoment.format(dateFormat)} />}
+                            {isEntryDate && <Counters />}
+                            {isEntryDate && <QuickEntry />}
                             <div className={isToday ? "details today" : "details"}
                                 data-year={this.props.date.format("YYYY")}
                                 data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
-                                <NormalDateContent date={this.props.date} />
+                                {!isEntryDate && <DateHeader thisDate={this.props.date.format(dateFormat)} />}
+                                <div className={isToday ? "details today" : "details"}
+                                    data-year={this.props.date.format("YYYY")}
+                                    data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
+                                    <NormalDateContent date={this.props.date} />
+                                </div>
                             </div>
                         </div>
                     )
@@ -66,13 +68,12 @@ class NormalDateContent extends React.Component<NormalDateContentProps> {
 
     render(): React.ReactNode {
         return (
-            <TaskListContext.Consumer>{({ taskList }) => (
+            <TaskListContext.Consumer>{({ taskList, entryOnDate }) => (
                 <div className='content'>
                     {taskList.map((t, i) =>
-                        <TaskListContext.Provider value={{ taskList: [t] }} key={i}>
+                        <TaskListContext.Provider value={{ taskList: [t], entryOnDate: entryOnDate }} key={i}>
                             <TaskItemView key={i} />
-                        </TaskListContext.Provider>
-                    )}
+                        </TaskListContext.Provider>)}
                 </div>)
             }
             </TaskListContext.Consumer>
@@ -95,7 +96,7 @@ class QuickEntry extends React.Component<{}, QuickEntryState> {
     private quickEntryPanel;
     private dateFilter: string[] = new Array<string>(2);
     private priorityFilter: string[] = new Array<string>;
-    constructor(none: { }) {
+    constructor(none: {}) {
         super(none);
 
         this.onQuickEntryFileSelectChange = this.onQuickEntryFileSelectChange.bind(this);
@@ -337,12 +338,16 @@ class MultiSelect extends React.Component<MultiSelectProps, MultiSelectStates> {
     }
 }
 
-class TodayFocus extends React.Component {
+const defaultTodayFocusProps = {
+    visual: "Today" as string,
+};
+type TodayFocusProps = Readonly<typeof defaultTodayFocusProps>;
+class TodayFocus extends React.Component<TodayFocusProps> {
     render(): React.ReactNode {
         return (
             <TodayFocusEventHandlersContext.Consumer>{callback => (
                 <div className='todayHeader' aria-label='Focus today' onClick={callback.handleTodayFocusClick}>
-                    Today
+                    {this.props.visual}
                 </div>)}
             </TodayFocusEventHandlersContext.Consumer>
         );
