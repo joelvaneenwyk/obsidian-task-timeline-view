@@ -70,7 +70,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
     handleFilterEnable(startDate: string, endDate: string, priorities: string[]) {
 
         var taskList: TaskDataModel[] = this.props.taskListModel.get("taskList");
-  
+
         if (startDate && startDate !== "" && endDate && endDate !== "") {
             taskList = taskList
                 .filter(TaskMapable.filterDateRange(moment(startDate), moment(endDate)))
@@ -190,9 +190,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
                     //@ts-ignore
                     handleModifyTask: this.app.plugins.plugins['obsidian-tasks-plugin'] === undefined ? undefined : this.handleModifyTask,
                 }}>
-                    <TaskListContext.Provider value={{ taskList: this.state.taskList }}>
-                        <TimelineView userOptions={this.state.userOptions} />
-                    </TaskListContext.Provider>
+                    <TimelineView userOptions={this.state.userOptions} taskList={this.state.taskList} />
                 </TaskItemEventHandlersContext.Provider>
             </QuickEntryHandlerContext.Provider>
         )
