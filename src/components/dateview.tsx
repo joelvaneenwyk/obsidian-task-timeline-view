@@ -22,13 +22,13 @@ export class DateView extends React.Component<DateViewProps> {
                     const isToday = this.props.date.isSame(moment(), 'date');
                     return (
                         <div>
-                            {isEntryDate && <TodayFocus visual={isToday ? "Today" : entryOnDateMoment.format(dateFormat)} />}
+                            {isEntryDate && <TodayFocus visual={"Focus On Today"} />}
                             {isEntryDate && <Counters />}
                             {isEntryDate && <QuickEntry />}
                             <div className={isToday ? "details today" : "details"}
                                 data-year={this.props.date.format("YYYY")}
                                 data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
-                                {!isEntryDate && <DateHeader thisDate={this.props.date.format(dateFormat)} />}
+                                <DateHeader thisDate={this.props.date.format(dateFormat)} />
                                 <div className={isToday ? "details today" : "details"}
                                     data-year={this.props.date.format("YYYY")}
                                     data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
