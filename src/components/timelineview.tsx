@@ -72,13 +72,13 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
         const firstDay = sortedDatas.first();
         const lastDay = sortedDatas.last();
 
-        const taskOfToday = taskList.filter(TaskMapable.filterDate(moment()));
-        const overdueCount: number = taskOfToday.filter(t => t.status === TaskStatus.overdue).length;
-        const unplannedCount: number = taskOfToday.filter(t => t.status === TaskStatus.unplanned).length;
-        const completedCount: number = taskOfToday.filter(t => t.status === TaskStatus.done).length;
-        const cancelledCount: number = taskOfToday.filter(t => t.status === TaskStatus.cancelled).length;
+        //const taskOfToday = taskList.filter(TaskMapable.filterDate(moment()));
+        const overdueCount: number = taskList.filter(t => t.status === TaskStatus.overdue).length;
+        const unplannedCount: number = taskList.filter(t => t.status === TaskStatus.unplanned).length;
+        const completedCount: number = taskList.filter(t => t.status === TaskStatus.done).length;
+        const cancelledCount: number = taskList.filter(t => t.status === TaskStatus.cancelled).length;
         // .due, .scheduled, .process, .start
-        const todoCount: number = taskOfToday.length - unplannedCount - completedCount - cancelledCount - overdueCount;
+        const todoCount: number = taskList.length - unplannedCount - completedCount - cancelledCount - overdueCount;
 
         const styles = new Array<string>;
         if (!this.props.userOptions.useCounters) styles.push("noCounters");
@@ -111,8 +111,12 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
         if (this.props.userOptions.dailyNoteFormat && this.props.userOptions.dailyNoteFormat !== '')
             quickEntryFiles.add(daileNoteFolder + dailyNoteFileName);
 
+        const baseStyles = [...new Set(styles)].join(" ");
+        const counterFilter = this.state.filter.length === 0 ?
+            "" : this.state.filter + this.props.userOptions.counterBehavior;
+        const todayFocus = this.state.todayFocus ? "todayFocus" : "";
         return (
-            <div className={`taskido ${[...new Set(styles)].join(" ")} ${this.state.filter} ${this.state.todayFocus ? "todayFocus" : ""}`}
+            <div className={`taskido ${baseStyles} ${counterFilter} ${todayFocus}`}
                 id={`taskido${(new Date()).getTime()}`
                 }>
                 <TodayFocusEventHandlersContext.Provider value={{ handleTodayFocusClick: this.handleTodayFocus }}>
@@ -124,23 +128,23 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
                         select: this.props.userOptions.inbox,
                         counters: [
                             {
-                                onClick: () => { this.handleCounterFilterClick('todoFilter') },
+                                onClick: () => { this.handleCounterFilterClick('todo') },
                                 cnt: todoCount,
                                 label: "Todo",
                                 id: "todo",
-                                ariaLabel: "Filter Todo Tasks"
+                                ariaLabel: "Todo Tasks"
                             }, {
-                                onClick: () => { this.handleCounterFilterClick('overdueFilter') },
+                                onClick: () => { this.handleCounterFilterClick('overdue') },
                                 cnt: overdueCount,
                                 id: "overdue",
                                 label: "Overdue",
-                                ariaLabel: "Filter Overdue Tasks"
+                                ariaLabel: "Overdue Tasks"
                             }, {
-                                onClick: () => { this.handleCounterFilterClick('unplannedFilter') },
+                                onClick: () => { this.handleCounterFilterClick('unplanned') },
                                 cnt: unplannedCount,
                                 id: "unplanned",
                                 label: "Unplanned",
-                                ariaLabel: "Filter Unplanned Tasks"
+                                ariaLabel: "Unplanned Tasks"
                             }
                         ]
                     }}>
