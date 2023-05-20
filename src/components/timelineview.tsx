@@ -72,13 +72,13 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
         const firstDay = sortedDatas.first();
         const lastDay = sortedDatas.last();
 
-        const taskOfToday = taskList.filter(TaskMapable.filterDate(moment()));
-        const overdueCount: number = taskOfToday.filter(t => t.status === TaskStatus.overdue).length;
-        const unplannedCount: number = taskOfToday.filter(t => t.status === TaskStatus.unplanned).length;
-        const completedCount: number = taskOfToday.filter(t => t.status === TaskStatus.done).length;
-        const cancelledCount: number = taskOfToday.filter(t => t.status === TaskStatus.cancelled).length;
+        //const taskOfToday = taskList.filter(TaskMapable.filterDate(moment()));
+        const overdueCount: number = taskList.filter(t => t.status === TaskStatus.overdue).length;
+        const unplannedCount: number = taskList.filter(t => t.status === TaskStatus.unplanned).length;
+        const completedCount: number = taskList.filter(t => t.status === TaskStatus.done).length;
+        const cancelledCount: number = taskList.filter(t => t.status === TaskStatus.cancelled).length;
         // .due, .scheduled, .process, .start
-        const todoCount: number = taskOfToday.length - unplannedCount - completedCount - cancelledCount - overdueCount;
+        const todoCount: number = taskList.length - unplannedCount - completedCount - cancelledCount - overdueCount;
 
         const styles = new Array<string>;
         if (!this.props.userOptions.useCounters) styles.push("noCounters");
