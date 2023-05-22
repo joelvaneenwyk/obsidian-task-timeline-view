@@ -230,7 +230,7 @@ class QuickEntry extends React.Component<{}, QuickEntryState> {
                                 options={filterNames}
                                 fallbackValueIndex={0}
                                 selectChangeHandler={res => { this.setState({ filters: res }) }}
-                                visual={['➕', 'date', 'priority']} />
+                                visual={['➕', '📆 date', '⏫ priority']} />
 
                         }
 
@@ -314,7 +314,6 @@ class MultiSelect extends React.Component<MultiSelectProps, MultiSelectStates> {
     render(): React.ReactNode {
         return (
             <div className='left MultiSelect'>
-                <div>{this.state.results.map(f => "🎯" + this.props.visual[this.props.options.indexOf(f)]).join("; ")}</div>
                 <select name={this.props.name} className={this.props.className} ref={this.selectElem}
                     onClick={() => {
                         if (this.selectElem.current !== null)
@@ -334,10 +333,11 @@ class MultiSelect extends React.Component<MultiSelectProps, MultiSelectStates> {
                         //.filter((_, i) => i !== this.props.fallbackValueIndex)
                         .map((n, i) =>
                             <option value={n} key={i}>
-                                {(this.state.results.includes(n) ? "🎯" : " ") + this.props.visual[i]}
+                                {this.props.visual[i] + (this.state.results.includes(n) ? "🎯" : " ")}
                             </option>
                         )}
                 </select>
+                {this.state.results.map(f => <a>{this.props.visual[this.props.options.indexOf(f)] + "🎯"}</a>)}
             </div>
         )
     }
