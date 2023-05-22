@@ -225,6 +225,7 @@ export class ObsidianTaskAdapter {
             real: true,
             header: parent,
             status: statusString,
+            statusMarker: statusString,
             checked: description.replace(' ', '').length !== 0,
             completed: statusString === 'x',
             fullyCompleted: statusString !== ' ',
