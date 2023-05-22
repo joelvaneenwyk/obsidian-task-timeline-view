@@ -126,6 +126,7 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
                         dateFormat: this.props.userOptions.dateFormat,
                         taskFiles: [...quickEntryFiles],
                         select: this.props.userOptions.inbox,
+                        forward: this.props.userOptions.forward,
                         counters: [
                             {
                                 onClick: () => { this.handleCounterFilterClick('todo') },

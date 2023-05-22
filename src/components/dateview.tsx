@@ -1,7 +1,7 @@
 import moment from 'moment';
 import * as React from 'react';
 import { getFileTitle } from '../../../dataview-util/dataview';
-import { doneDateSymbol, dueDateSymbol, prioritySymbols, recurrenceSymbol, scheduledDateSymbol, startDateSymbol } from '../../../utils/tasks';
+import { TaskStatus, doneDateSymbol, dueDateSymbol, prioritySymbols, recurrenceSymbol, scheduledDateSymbol, startDateSymbol } from '../../../utils/tasks';
 import * as Icons from './asserts/icons';
 import { QuickEntryHandlerContext, TaskListContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
 import { TaskItemView } from './taskitemview';
@@ -15,26 +15,31 @@ type DateViewProps = Readonly<typeof defaultDateProps>;
 export class DateView extends React.Component<DateViewProps> {
     render(): React.ReactNode {
         return (
-            <UserOptionContext.Consumer>{({ dateFormat }) => (
+            <UserOptionContext.Consumer>{({ forward, dateFormat }) => (
                 < TaskListContext.Consumer >{({ taskList, entryOnDate }) => {
                     const entryOnDateMoment = moment(entryOnDate);
                     const isEntryDate = this.props.date.format("YYYYMMDD") === entryOnDateMoment.format("YYYYMMDD");
                     const isToday = this.props.date.isSame(moment(), 'date');
+                    if (forward && !isToday) {
+                        taskList = taskList.filter(t => t.status !== TaskStatus.overdue)
+                    }
                     return (
                         <div>
                             {isEntryDate && <TodayFocus visual={"Focus On Today"} />}
                             {isEntryDate && <Counters />}
                             {isEntryDate && <QuickEntry />}
-                            <div className={isToday ? "details today" : "details"}
-                                data-year={this.props.date.format("YYYY")}
-                                data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
-                                <DateHeader thisDate={this.props.date.format(dateFormat)} />
-                                <div className={isToday ? "details today" : "details"}
+                            {
+                                taskList.length > 0 && <div className={isToday ? "details today" : "details"}
                                     data-year={this.props.date.format("YYYY")}
                                     data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
-                                    <NormalDateContent date={this.props.date} />
+                                    <DateHeader thisDate={this.props.date.format(dateFormat)} />
+                                    <div className={isToday ? "details today" : "details"}
+                                        data-year={this.props.date.format("YYYY")}
+                                        data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
+                                        <NormalDateContent date={this.props.date} />
+                                    </div>
                                 </div>
-                            </div>
+                            }
                         </div>
                     )
 

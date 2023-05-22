@@ -16,6 +16,7 @@ export const UserOptionContext = React.createContext({
     dateFormat: "YYYY-MM-DD" as string,
     tagPalette: {} as any,
     hideTags: [] as string[],
+    forward: false as boolean,
 });
 
 export const QuickEntryHandlerContext = React.createContext({
