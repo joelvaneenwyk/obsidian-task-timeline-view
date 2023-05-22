@@ -84,7 +84,7 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
         if (!this.props.userOptions.useCounters) styles.push("noCounters");
         if (!this.props.userOptions.useQuickEntry) styles.push("noQuickEntry");
         if (!this.props.userOptions.useYearHeader) styles.push("noYear");
-        if (!this.props.userOptions.useCompletedTasks) styles.push("noDone");
+        //if (!this.props.userOptions.useCompletedTasks) styles.push("noDone");
         if (!this.props.userOptions.useFileBadge &&
             !this.props.userOptions.usePriority &&
             !this.props.userOptions.useRecurrence &&
