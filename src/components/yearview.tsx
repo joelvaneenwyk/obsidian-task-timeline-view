@@ -27,7 +27,7 @@ export class YearView extends React.Component<YearViewProps> {
                 return (
                     <div>
                         <YearHeader year={this.props.year} dataTypes={[...new Set(tasksOfThisYear.map(t => t.status))]} />
-                        {daysOfThisYear.size === 0 && this.props.year === moment().year() ?
+                        {this.props.year === moment().year() && (daysOfThisYear.size === 0 || !daysOfThisYear.has(moment().format(innerDateFormat))) ?
                             <DateView date={moment()} key={0} /> :
                             [...daysOfThisYear]
                                 .filter(d => moment(d).year() === this.props.year)
