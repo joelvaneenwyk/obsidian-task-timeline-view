@@ -62,7 +62,8 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
             });
         })
 
-        involvedDates.add(moment().format(innerDateFormat));
+        if (!involvedDates.has(moment().format(innerDateFormat)))
+            involvedDates.add(moment().format(innerDateFormat))
 
         const sortedDatas = [...involvedDates].sort();
         const earliestYear: number = +moment(sortedDatas.first()!.toString()).format("YYYY");
@@ -154,7 +155,7 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
                                     {
                                         taskList: taskList.filter(TaskMapable.filterYear(moment().year(y))),
                                         entryOnDate: this.props.userOptions.entryPosition === "top" ? firstDay! :
-                                            this.props.userOptions.entryPosition === "bottom" ? lastDay! : moment().toString(),
+                                            this.props.userOptions.entryPosition === "bottom" ? lastDay! : moment().format(innerDateFormat),
                                     }
                                 } key={i}>
                                     <YearView year={y} key={y} />
