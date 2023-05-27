@@ -4,7 +4,7 @@ import { Priority, TaskDataModel, TaskRegularExpressions } from "../../utils/tas
 
 export class ObsidianTaskAdapter {
     private app: App;
-    private tasksList: Array<TaskDataModel> = [];
+    private tasksList: TaskDataModel[] = [];
     constructor(app: App) {
         this.app = app;
 

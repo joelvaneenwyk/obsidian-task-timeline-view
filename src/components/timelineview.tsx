@@ -62,12 +62,11 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
             });
         })
 
-        if (!involvedDates.has(moment().format(innerDateFormat)))
-            involvedDates.add(moment().format(innerDateFormat));
+        involvedDates.add(moment().format(innerDateFormat));
 
         const sortedDatas = [...involvedDates].sort();
-        const earliestYear: number = +moment(sortedDatas[0].toString()).format("YYYY");
-        const latestYear: number = +moment(sortedDatas[sortedDatas.length - 1].toString()).format("YYYY");
+        const earliestYear: number = +moment(sortedDatas.first()!.toString()).format("YYYY");
+        const latestYear: number = +moment(sortedDatas.last()!.toString()).format("YYYY");
         const years = Array.from({ length: latestYear - earliestYear + 1 }, (_, i) => i + earliestYear);
         const firstDay = sortedDatas.first();
         const lastDay = sortedDatas.last();
