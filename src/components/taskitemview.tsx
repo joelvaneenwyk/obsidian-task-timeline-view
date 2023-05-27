@@ -1,6 +1,8 @@
 import moment, { Moment } from "moment";
+import { MarkdownRenderer } from "obsidian";
 import * as React from "react";
 import { getFileTitle } from "../../../dataview-util/dataview";
+import { TasksTimelineView } from "../../../src/views";
 import { recurrenceSymbol } from "../../../utils/tasks";
 import * as Icons from './asserts/icons';
 import { TaskItemEventHandlersContext, TaskListContext, UserOptionContext } from "./context";
@@ -63,7 +65,9 @@ export class TaskItemView extends React.Component<TaskItemProps, TaskItemState> 
                                             style={{ "--task-color": color || "var(--text-muted)" } as React.CSSProperties} aria-label={ariaLabel}>
                                             <StripWithIcon status={item.status} onClick={onCompleteTask} />
                                             <div className='lines' onClick={openTaskFile}>
-                                                <div className="content"><Content display={display} links={outlinks} /></div>
+                                                <div className="content">
+                                                    <Content display={display} fileName={item.path} />
+                                                </div>
                                                 <div className='line info'>
                                                     {callbacks.handleModifyTask &&
                                                         <ModifyBadge onClick={onModifyTask}></ModifyBadge>}
@@ -118,33 +122,14 @@ export class TaskItemView extends React.Component<TaskItemProps, TaskItemState> 
 
 const defaultContentProps = {
     display: "",
-    links: [] as any[]
+    fileName: "",
 }
 type ContentProps = Readonly<typeof defaultContentProps>
 class Content extends React.Component<ContentProps> {
     render(): React.ReactNode {
-        var blocks = []
-        var index = 0
-        for (var link of this.props.links) {
-            if (!link.path || link.path.length === 0 || !link.subpath) continue;
-            if (index !== Number(link.subpath)) {
-                blocks.push({ "normal": true, "display": this.props.display.substring(index, Number(link.subpath)) })
-                index = Number(link.subpath);
-            }
-            blocks.push({ "normal": false, "inner": link.embed, "display": link.display, "path": link.path })
-            index += link.display.length;
-
-        }
-
-        if (index !== this.props.display.length) {
-            blocks.push({ "normal": true, "display": this.props.display.substring(index) });
-        }
-        return blocks.map((b, i) => {
-            return b.normal ? <a key={i}>{b.display}</a> :
-                b.inner ? <a key={i} className="innerLink" aria-label={b.path} href={b.path}>{b.display}</a> :
-                    <a key={i} className="outerLink" aria-label={b.path} href={b.path}>{b.display}</a>
-        })
-
+        const cont = createEl("a")
+        MarkdownRenderer.renderMarkdown(this.props.display, cont, this.props.fileName, TasksTimelineView.view!);
+        return <a dangerouslySetInnerHTML={{ __html: cont.firstElementChild!.innerHTML }} />
     }
 }
 
