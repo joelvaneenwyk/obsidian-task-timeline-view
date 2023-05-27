@@ -27,17 +27,19 @@ export class YearView extends React.Component<YearViewProps> {
                 return (
                     <div>
                         <YearHeader year={this.props.year} dataTypes={[...new Set(tasksOfThisYear.map(t => t.status))]} />
-                        {[...daysOfThisYear]
-                            .filter(d => moment(d).year() === this.props.year)
-                            .sort()
-                            .map((d, i) => {
-                                const tasksOfThisDate = tasksOfThisYear.filter(TaskMapable.filterDate(moment(d)));
-                                return (
-                                    <TaskListContext.Provider value={{ taskList: tasksOfThisDate, entryOnDate: entryOnDate }} key={i}>
-                                        <DateView date={moment(d)} key={i} />
-                                    </TaskListContext.Provider>
-                                )
-                            })}
+                        {daysOfThisYear.size === 0 && this.props.year === moment().year() ?
+                            <DateView date={moment()} key={0} /> :
+                            [...daysOfThisYear]
+                                .filter(d => moment(d).year() === this.props.year)
+                                .sort()
+                                .map((d, i) => {
+                                    const tasksOfThisDate = tasksOfThisYear.filter(TaskMapable.filterDate(moment(d)));
+                                    return (
+                                        <TaskListContext.Provider value={{ taskList: tasksOfThisDate, entryOnDate: entryOnDate }} key={i}>
+                                            <DateView date={moment(d)} key={i} />
+                                        </TaskListContext.Provider>
+                                    )
+                                })}
                     </div>)
             }}
             </TaskListContext.Consumer>
