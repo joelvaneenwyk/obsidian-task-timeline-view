@@ -22,6 +22,7 @@ export class DateView extends React.Component<DateViewProps> {
                     const isToday = this.props.date.isSame(moment(), 'date');
                     if (forward && !isToday) {
                         taskList = taskList.filter(t => t.status !== TaskStatus.overdue)
+                        console.log(taskList)
                     }
                     return (
                         <div>
@@ -36,7 +37,9 @@ export class DateView extends React.Component<DateViewProps> {
                                     <div className={isToday ? "details today" : "details"}
                                         data-year={this.props.date.format("YYYY")}
                                         data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
-                                        <NormalDateContent date={this.props.date} />
+                                        <TaskListContext.Provider value={{ taskList: taskList, entryOnDate: entryOnDate }}>
+                                            <NormalDateContent date={this.props.date} />
+                                        </TaskListContext.Provider>
                                     </div>
                                 </div>
                             }
@@ -73,14 +76,12 @@ class NormalDateContent extends React.Component<NormalDateContentProps> {
 
     render(): React.ReactNode {
         return (
-            <TaskListContext.Consumer>{({ taskList, entryOnDate }) => (
-                <div className='content'>
-                    {taskList.map((t, i) =>
-                        <TaskListContext.Provider value={{ taskList: [t], entryOnDate: entryOnDate }} key={i}>
-                            <TaskItemView key={i} />
-                        </TaskListContext.Provider>)}
-                </div>)
-            }
+            <TaskListContext.Consumer>
+                {({ taskList }) => (
+                    <div className='content'>
+                        {taskList.map((t, i) => <TaskItemView key={i} taskItem={t} />)}
+                    </div>
+                )}
             </TaskListContext.Consumer>
         )
     }
