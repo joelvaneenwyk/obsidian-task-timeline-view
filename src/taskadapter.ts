@@ -21,15 +21,7 @@ export class ObsidianTaskAdapter {
 
     pathsFilter(filter: string[]) {
         const isParent = (parent: string, path: string) => {
-            const split = path.split('/');
-            var match = "";
-            for (let f of split) {
-                match += f;
-                if (parent === match) return true;
-                match += '/';
-                if (parent === match) return true;
-            }
-            return false;
+            return path.split('/').indexOf(parent) === 0;
         };
         return (file: TFile) => {
             const fileName = file.path;
