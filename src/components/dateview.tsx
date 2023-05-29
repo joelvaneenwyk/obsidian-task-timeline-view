@@ -22,7 +22,6 @@ export class DateView extends React.Component<DateViewProps> {
                     const isToday = this.props.date.isSame(moment(), 'date');
                     if (forward && !isToday) {
                         taskList = taskList.filter(t => t.status !== TaskStatus.overdue)
-                        console.log(taskList)
                     }
                     return (
                         <div>
