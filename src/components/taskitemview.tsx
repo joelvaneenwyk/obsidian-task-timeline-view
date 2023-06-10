@@ -140,8 +140,8 @@ class StripWithIcon extends React.Component<StripWithIconProps> {
     render(): React.ReactNode {
         return (
             <div className='timeline' onClick={this.props.onClick}>
-                <div className='icon'>{Icons.getTaskStatusIcon(this.props.status)}</div>
-                <div className='stripe'></div>
+                <a className='icon'>{Icons.getTaskStatusIcon(this.props.status)}</a>
+                <a className='stripe'></a>
             </div>
         )
     }
@@ -204,11 +204,11 @@ class FileBadge extends React.Component<FileBadgeProps> {
         const fileName = getFileTitle(filePath);
         const subPath = this.props.subPath;
         return (
-            <div className='file' aria-label={filePath}>
+            <a className='file' aria-label={filePath}>
                 <div className='icon'>{Icons.fileIcon}</div>
                 <div className='label'>{fileName}</div>
                 <span className='header'>{subPath != "" ? "  >  " + subPath : subPath}</span>
-            </div>)
+            </a>)
     }
 }
 
@@ -230,10 +230,10 @@ class DateStatusBadge extends React.Component<BadgeProps> {
         const label = this.props.label;
         const icon = this.props.icon;
         return (
-            <div className={type} aria-label={aria_label} /*onClick={this.props.onClick}*/>
+            <a className={type} aria-label={aria_label} /*onClick={this.props.onClick}*/>
                 <div className='icon'>{icon}</div>
                 <div className='label'>{label}</div>
-            </div>
+            </a>
         );
     }
 }
@@ -245,7 +245,7 @@ type ModifyBadgeProps = Readonly<typeof defaultModifyBadgeProps>;
 class ModifyBadge extends React.Component<ModifyBadgeProps> {
     render(): React.ReactNode {
         return (
-            <div aria-label="Modify Task" onClick={this.props.onClick}>✏️</div>
+            <a aria-label="Modify Task" onClick={this.props.onClick}>✏️</a>
         )
     }
 }
