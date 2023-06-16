@@ -1,7 +1,7 @@
 import moment from 'moment';
 import * as React from 'react';
 import { getFileTitle } from '../../../dataview-util/dataview';
-import { TaskStatus, doneDateSymbol, dueDateSymbol, prioritySymbols, recurrenceSymbol, scheduledDateSymbol, startDateSymbol } from '../../../utils/tasks';
+import { TaskStatus, doneDateSymbol, dueDateSymbol, TasksPrioritySymbolToLabel, recurrenceSymbol, scheduledDateSymbol, startDateSymbol } from '../../../utils/tasks';
 import * as Icons from './asserts/icons';
 import { QuickEntryHandlerContext, TaskListContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
 import { TaskItemView } from './taskitemview';
@@ -147,9 +147,6 @@ class QuickEntry extends React.Component<{}, QuickEntryState> {
         if (newTask.includes("start ")) { input.value = newTask.replace("start", startDateSymbol) };
         if (newTask.includes("scheduled ")) { input.value = newTask.replace("scheduled", scheduledDateSymbol) };
         if (newTask.includes("done ")) { input.value = newTask.replace("done", doneDateSymbol) };
-        if (newTask.includes("high ")) { input.value = newTask.replace("high", prioritySymbols.High) };
-        if (newTask.includes("medium ")) { input.value = newTask.replace("medium", prioritySymbols.Medium) };
-        if (newTask.includes("low ")) { input.value = newTask.replace("low", prioritySymbols.Low) };
         if (newTask.includes("repeat ")) { input.value = newTask.replace("repeat", recurrenceSymbol) };
         if (newTask.includes("recurring ")) { input.value = newTask.replace("recurring", recurrenceSymbol) };
 

@@ -1,6 +1,6 @@
 import { App, FrontMatterCache, LinkCache, ListItemCache, Pos, SectionCache, TagCache, TFile } from "obsidian";
 import { Link } from "../../dataview-util/markdown";
-import { Priority, TaskDataModel, TaskRegularExpressions } from "../../utils/tasks";
+import { TaskDataModel, TaskRegularExpressions } from "../../utils/tasks";
 
 export class ObsidianTaskAdapter {
     private app: App;
@@ -205,7 +205,7 @@ export class ObsidianTaskAdapter {
             link: parent,
             section: parent,
             text: line,
-            visual: description,
+            visual: description.trim(),
             tags: tags,
             line: position.start.line,
             lineCount: position.end.line - position.start.line + 1,
@@ -226,8 +226,7 @@ export class ObsidianTaskAdapter {
             fullyCompleted: statusString !== ' ',
             dailyNote: false,
             order: 0,
-            priority: Priority.None,
-            priorityLabel: "No Priority",
+            priority: "",
             //happens: new Map<string, string>(),
             recurrence: "",
             fontMatter: fontMatter || {},

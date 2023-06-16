@@ -95,10 +95,11 @@ export class TaskItemView extends React.Component<TaskItemProps, TaskItemState> 
                                                 className='repeat' ariaLabel={'recurrent: ' + item.recurrence.replace(recurrenceSymbol, '')}
                                                 label={item.recurrence.replace(recurrenceSymbol, '')} icon={Icons.repeatIcon} />}
 
-                                        {item.priorityLabel &&
+                                        {item.priority &&
                                             <DateStatusBadge //onClick={openTaskFile}
-                                                className='priority' ariaLabel={'priority: ' + item.priorityLabel}
-                                                label={item.priorityLabel} icon={Icons.priorityIcon} />}
+                                                className='priority' ariaLabel={'priority: ' + item.priority}
+                                                label={item.priority.length > 0 ? item.priority + " Priority" : "No Priority"}
+                                                icon={Icons.priorityIcon} />}
                                         <FileBadge filePath={item.path} subPath={item.section.subpath || ""} />
                                         {[...new Set(tags)].filter(t => !hideTags.includes(t)).map((t, i) => {
                                             return < TagBadge tag={t} key={i} />
