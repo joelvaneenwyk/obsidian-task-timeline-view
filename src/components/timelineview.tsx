@@ -127,6 +127,7 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
                         taskFiles: [...quickEntryFiles],
                         select: this.props.userOptions.inbox,
                         forward: this.props.userOptions.forward,
+                        useBuiltinStyle: this.props.userOptions.useBuiltinStyle,
                         counters: [
                             {
                                 onClick: () => { this.handleCounterFilterClick('todo') },
