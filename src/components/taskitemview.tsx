@@ -43,26 +43,29 @@ export class TaskItemView extends React.Component<TaskItemProps, TaskItemState> 
         const ariaLabel = getFileTitle(item.path);
         const tags = [...new Set(item.tags)];
         const outlinks = item.outlinks;
+
+        const path = item.path;
+        const position = item.position;
         return (
             <TaskItemEventHandlersContext.Consumer>{
                 callbacks => {
                     const openTaskFile = () => {
-                        callbacks.handleOpenFile(item.path, item.position);
+                        callbacks.handleOpenFile(path, position);
                     };
-                    const onCompleteTask = () => {
-                        callbacks.handleCompleteTask(item.path, item.position);
-                    }
+                    const onToggleTask = () => {
+                        callbacks.handleCompleteTask(path, position);
+                    };
                     const onModifyTask = () => {
-                        callbacks.handleModifyTask(item.path, item.position);
-                    }
+                        callbacks.handleModifyTask(path, position);
+                    };
                     return (
                         <UserOptionContext.Consumer>{
                             ({ dateFormat, hideTags, useBuiltinStyle }) =>
                             (<div data-line={line} data-task={item.statusMarker} data-col={col} data-link={link} data-dailynote={isDailyNote}
                                 className={`task ${item.status}`}
                                 style={{ "--task-color": color || "var(--text-muted)" } as React.CSSProperties} aria-label={ariaLabel}>
-                                <StripWithIcon useBuiltinStyle={useBuiltinStyle} marker={item.statusMarker}
-                                    status={item.status} onClick={onCompleteTask} />
+                                <StripWithIcon onToggle={onToggleTask} useBuiltinStyle={useBuiltinStyle}
+                                    marker={item.statusMarker} status={item.status} />
                                 <div className='lines' onClick={openTaskFile}>
                                     <div className="content">
                                         <Content display={display} fileName={item.path} />
@@ -135,7 +138,7 @@ const defaultStripWithIconProps = {
     status: "task",
     marker: " ",
     useBuiltinStyle: true,
-    onClick: () => { },
+    onToggle: () => { },
 }
 
 type StripWithIconProps = Readonly<typeof defaultStripWithIconProps>
@@ -143,12 +146,16 @@ class StripWithIcon extends React.Component<StripWithIconProps> {
 
     render(): React.ReactNode {
         return (
-            <div className='timeline'>
+            <div className='timeline' >
                 <input id="statusMarker" type="checkbox" className={this.props.useBuiltinStyle ? "icon" : ""}
                     data-task={this.props.marker}
-                    checked={this.props.marker !== ' '} onChange={this.props.onClick}></input>
+                    defaultChecked={this.props.marker !== ' '} onClick={() => {
+                        if (!this.props.useBuiltinStyle) this.props.onToggle();
+                    }}></input>
                 {this.props.useBuiltinStyle &&
-                    <label htmlFor="statusMarker" className="icon">{Icons.getTaskStatusIcon(this.props.status)}</label>}
+                    <label htmlFor="statusMarker" className="icon" onClick={() => {
+                        if (this.props.useBuiltinStyle) this.props.onToggle();
+                    }}>{Icons.getTaskStatusIcon(this.props.status)}</label>}
             </div>
         )
     }
