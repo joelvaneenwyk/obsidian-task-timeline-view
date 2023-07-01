@@ -164,13 +164,13 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
                 { line: position.start.line, ch: position.start.col },
                 { line: position.end.line, ch: position.end.col }
             );
-            const task = this.app.workspace.activeEditor?.editor?.getSelection();
-            if (!task) return;
-            const match = task.match(TaskRegularExpressions.taskRegex);
-            if (!match || match.length < 5) return;
-            const newTask = [match[1], match[2], ((match[3] === ' ') ? '[x]' : '[ ]'), match[4]].join(' ').trimStart();
-            this.app.workspace.activeEditor?.editor?.replaceSelection(newTask);
-            this.onUpdateTasks();
+            if (!this.app.workspace.activeEditor?.editor?.hasFocus())
+                this.app.workspace.activeEditor?.editor?.focus();
+            const editor = this.app.workspace.activeEditor?.editor!;
+            const view = this.app.workspace.getLeaf().view;
+            //@ts-ignore
+            this.app.commands.commands['obsidian-tasks-plugin:toggle-done']
+                .editorCheckCallback(false, editor, view);
         })
     }
 
