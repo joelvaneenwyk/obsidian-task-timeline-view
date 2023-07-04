@@ -1,8 +1,8 @@
 import moment, { Moment } from 'moment';
 import * as React from 'react';
 import { UserOption } from '../../../src/settings';
+import * as TaskMapable from '../../../utils/taskmapable';
 import { innerDateFormat, TaskDataModel, TaskStatus } from '../../../utils/tasks';
-import * as TaskMapable from '../../../utils/taskmapable'
 import { TaskListContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
 import { YearView } from './yearview';
 
