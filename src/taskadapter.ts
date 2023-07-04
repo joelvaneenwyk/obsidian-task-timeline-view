@@ -51,7 +51,7 @@ export class ObsidianTaskAdapter {
     async generateTasksList(pathFilter: string[], includeTags: string[], excludeTags: string[]) {
         this.tasksList.length = 0;
         const files = app.vault.getMarkdownFiles()
-        var filteredFiles = files;
+        let filteredFiles = files;
         if (pathFilter.length !== 0)
             filteredFiles = filteredFiles.filter(this.pathsFilter(pathFilter));
         if (includeTags.length !== 0)
@@ -90,13 +90,13 @@ export class ObsidianTaskAdapter {
             const findParent = () => {
                 if (!sections) return null;
                 if (item.parent > 0) {
-                    for (let s of sections) {
+                    for (const s of sections) {
                         if (s.position.start.line === item.parent) return s;
                     }
                 } else {
                     let p = -1;
                     let parentHeader = null;
-                    for (let s of sections) {
+                    for (const s of sections) {
                         if (s.type === "heading" && s.position.start.line > p && s.position.start.line < item.position.start.line) {
                             parentHeader = s;
                             p = parentHeader.position.start.line;
@@ -124,15 +124,15 @@ export class ObsidianTaskAdapter {
             const itemText = sliceFileContent(itemPos);
             const parentItem = findParent();
             const outLinks = findOutLinks(itemPos.start.line);
-            const parentLink = (!!parentItem) ?
+            const parentLink = (parentItem) ?
                 link.withSectionCache(parentItem, sliceFileContent(parentItem?.position)) : link;
-            const outLinkLinks = (!!outLinks) ?
+            const outLinkLinks = (outLinks) ?
                 outLinks.map(v => Link.withLinkCache(v)) : [];
 
             const tags = findTags(itemPos.start.line);
 
             const taskItem = this.fromLine(itemText, filePath, parentLink, itemPos, outLinkLinks, fontmatter, tags || []);
-            if (!!taskItem) {
+            if (taskItem) {
                 this.tasksList.push(taskItem);
             }
         }
@@ -173,7 +173,7 @@ export class ObsidianTaskAdapter {
         const body = regexMatch[4].trim();
 
         let description = body;
-        const indentation = regexMatch[1]; // before - [ ]
+        //const indentation = regexMatch[1]; // before - [ ]
         const listMarker = regexMatch[2]; // - for - [ ]
 
         // Get the status of the task.
@@ -189,11 +189,11 @@ export class ObsidianTaskAdapter {
             description = description.replace(TaskRegularExpressions.blockLinkRegex, '').trim();
         }
 
-        if (!!fontMatter) {
-            if (!!fontMatter["tag"] && typeof (fontMatter["tag"]) === "string") {
+        if (fontMatter) {
+            if (fontMatter["tag"] && typeof (fontMatter["tag"]) === "string") {
                 tags.push(fontMatter["tag"]);
             }
-            if (!!fontMatter["tags"] && typeof (fontMatter["tags"]) === typeof (new Array<string>())) {
+            if (fontMatter["tags"] && typeof (fontMatter["tags"]) === typeof (new Array<string>())) {
                 (fontMatter["tags"] as unknown as Array<string>).forEach(t => tags.push(t));
             }
         }

@@ -12,7 +12,7 @@ const getRelative = (someDate: Moment) => {
         return someDate.fromNow();
     } else {
         return someDate.calendar().split(' ')[0];
-    };
+    }
 };
 
 const defaultTaskItemProps = {
@@ -42,7 +42,7 @@ export class TaskItemView extends React.Component<TaskItemProps, TaskItemState> 
         const color = item.fontMatter["color"];
         const ariaLabel = getFileTitle(item.path);
         const tags = [...new Set(item.tags)];
-        const outlinks = item.outlinks;
+        //const outlinks = item.outlinks;
 
         const path = item.path;
         const position = item.position;
@@ -173,10 +173,10 @@ class TagBadge extends React.Component<TagBadgeProps> {
         return (
             <UserOptionContext.Consumer>{({ tagPalette }) => {
                 const tag = this.props.tag;
-                var tagText = tag.replace("#", "");
-                var color;
+                const tagText = tag.replace("#", "");
+                let color;
                 if (Object.keys(tagPalette).contains(tag)) color = tagPalette[tag];
-                var style: {};
+                let style: Record<string, unknown>;
                 if (color) {
                     style = {
                         '--tag-color': color,
@@ -188,7 +188,7 @@ class TagBadge extends React.Component<TagBadgeProps> {
                         '--tag-color': 'var(--text-muted)',
                         'zIndex': 9999,
                     };
-                };
+                }
                 return (
                     <TaskItemEventHandlersContext.Consumer>{callbacks => (
                         <a href={tag} className={'tag'} target='_blank' rel='noopener' style={style} aria-label={tag}

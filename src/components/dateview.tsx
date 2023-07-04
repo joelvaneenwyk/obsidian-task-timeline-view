@@ -1,7 +1,7 @@
 import moment from 'moment';
 import * as React from 'react';
 import { getFileTitle } from '../../../dataview-util/dataview';
-import { TaskStatus, doneDateSymbol, dueDateSymbol, TasksPrioritySymbolToLabel, recurrenceSymbol, scheduledDateSymbol, startDateSymbol } from '../../../utils/tasks';
+import { TaskStatus, doneDateSymbol, dueDateSymbol, recurrenceSymbol, scheduledDateSymbol, startDateSymbol } from '../../../utils/tasks';
 import * as Icons from './asserts/icons';
 import { QuickEntryHandlerContext, TaskListContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
 import { TaskItemView } from './taskitemview';
@@ -94,14 +94,14 @@ const defaultQuickEntryState = {
 };
 type QuickEntryState = typeof defaultQuickEntryState;
 
-class QuickEntry extends React.Component<{}, QuickEntryState> {
+class QuickEntry extends React.Component<Record<string, unknown>, QuickEntryState> {
     private textInput;
     private fileSecect;
     private okButton;
     private quickEntryPanel;
     private dateFilter: string[] = new Array<string>(2);
     private priorityFilter: string[] = new Array<string>;
-    constructor(none: {}) {
+    constructor(none: Record<string, unknown>) {
         super(none);
 
         this.onQuickEntryFileSelectChange = this.onQuickEntryFileSelectChange.bind(this);
@@ -143,17 +143,17 @@ class QuickEntry extends React.Component<{}, QuickEntryState> {
         if (!input) return;
         const newTask = input.value;
         // Icons
-        if (newTask.includes("due ")) { input.value = newTask.replace("due", dueDateSymbol) };
-        if (newTask.includes("start ")) { input.value = newTask.replace("start", startDateSymbol) };
-        if (newTask.includes("scheduled ")) { input.value = newTask.replace("scheduled", scheduledDateSymbol) };
-        if (newTask.includes("done ")) { input.value = newTask.replace("done", doneDateSymbol) };
-        if (newTask.includes("repeat ")) { input.value = newTask.replace("repeat", recurrenceSymbol) };
-        if (newTask.includes("recurring ")) { input.value = newTask.replace("recurring", recurrenceSymbol) };
+        if (newTask.includes("due ")) { input.value = newTask.replace("due", dueDateSymbol) }
+        if (newTask.includes("start ")) { input.value = newTask.replace("start", startDateSymbol) }
+        if (newTask.includes("scheduled ")) { input.value = newTask.replace("scheduled", scheduledDateSymbol) }
+        if (newTask.includes("done ")) { input.value = newTask.replace("done", doneDateSymbol) }
+        if (newTask.includes("repeat ")) { input.value = newTask.replace("repeat", recurrenceSymbol) }
+        if (newTask.includes("recurring ")) { input.value = newTask.replace("recurring", recurrenceSymbol) }
 
         // Dates
-        if (newTask.includes("today ")) { input.value = newTask.replace("today", moment().format("YYYY-MM-DD")) };
-        if (newTask.includes("tomorrow ")) { input.value = newTask.replace("tomorrow", moment().add(1, "days").format("YYYY-MM-DD")) };
-        if (newTask.includes("yesterday ")) { input.value = newTask.replace("yesterday", moment().subtract(1, "days").format("YYYY-MM-DD")) };
+        if (newTask.includes("today ")) { input.value = newTask.replace("today", moment().format("YYYY-MM-DD")) }
+        if (newTask.includes("tomorrow ")) { input.value = newTask.replace("tomorrow", moment().add(1, "days").format("YYYY-MM-DD")) }
+        if (newTask.includes("yesterday ")) { input.value = newTask.replace("yesterday", moment().subtract(1, "days").format("YYYY-MM-DD")) }
 
         // In X days/weeks/month/years
         const futureDate = newTask.match(/(in)\W(\d{1,3})\W(days|day|weeks|week|month|years|year) /);
@@ -162,7 +162,7 @@ class QuickEntry extends React.Component<{}, QuickEntryState> {
             const unit = futureDate[3] as moment.unitOfTime.Base;
             const date = moment().add(value, unit).format("YYYY-MM-DD[ ]")
             input.value = newTask.replace(futureDate[0], date);
-        };
+        }
 
         // Next Weekday
         const weekday = newTask.match(/(monday|tuesday|wednesday|thursday|friday|saturday|sunday) /);
@@ -173,8 +173,8 @@ class QuickEntry extends React.Component<{}, QuickEntryState> {
                 input.value = newTask.replace(weekday[1], moment().isoWeekday(dayINeed).format("YYYY-MM-DD"));
             } else {
                 input.value = newTask.replace(weekday[1], moment().add(1, 'weeks').isoWeekday(dayINeed).format("YYYY-MM-DD"));
-            };
-        };
+            }
+        }
 
         input.focus();
     }
@@ -272,7 +272,7 @@ class QuickEntry extends React.Component<{}, QuickEntryState> {
                                         callback.handleCreateNewTask(filePath, newTask);
                                     } else {
                                         this.textInput.current?.focus();
-                                    };
+                                    }
                                 } else {
                                     callback.handleFilterEnable(this.dateFilter[0], this.dateFilter[1], this.priorityFilter);
                                 }

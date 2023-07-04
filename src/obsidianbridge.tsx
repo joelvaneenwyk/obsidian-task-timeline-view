@@ -3,10 +3,10 @@ import moment from 'moment';
 import { App, ItemView, Notice, Pos } from 'obsidian';
 import * as React from 'react';
 import { defaultUserOptions, UserOption } from '../../src/settings';
-import { TaskDataModel, TaskMapable, TaskRegularExpressions } from '../../utils/tasks';
-import { QuickEntryHandlerContext, TaskItemEventHandlersContext, TaskListContext } from './components/context';
+import { TaskDataModel } from '../../utils/tasks';
+import { QuickEntryHandlerContext, TaskItemEventHandlersContext } from './components/context';
 import { TimelineView } from './components/timelineview';
-import { ObsidianTaskAdapter } from './taskadapter';
+import * as TaskMapable from '../../utils/taskmapable'
 
 const defaultObsidianBridgeProps = {
     plugin: {} as ItemView,
@@ -69,7 +69,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
 
     handleFilterEnable(startDate: string, endDate: string, priorities: string[]) {
 
-        var taskList: TaskDataModel[] = this.props.taskListModel.get("taskList");
+        let taskList: TaskDataModel[] = this.props.taskListModel.get("taskList");
 
         if (startDate && startDate !== "" && endDate && endDate !== "") {
             taskList = taskList
@@ -120,7 +120,7 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
         search.openGlobalSearch('tag:' + tag)
     }
 
-    handleOpenFile(path: string, position: Pos, openTaskEdit: boolean = false) {
+    handleOpenFile(path: string, position: Pos, openTaskEdit = false) {
         this.app.vault.adapter.exists(path).then(exist => {
             if (!exist) {
                 new Notice("No such file: " + path, 5000);
@@ -137,11 +137,13 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
                     if (!this.app.workspace.activeEditor?.editor?.hasFocus())
                         this.app.workspace.activeEditor?.editor?.focus();
                     if (openTaskEdit) {
-                        const editor = this.app.workspace.activeEditor?.editor!;
-                        const view = this.app.workspace.getLeaf().view;
-                        //@ts-ignore
-                        this.app.commands.commands['obsidian-tasks-plugin:edit-task']
-                            .editorCheckCallback(false, editor, view);
+                        const editor = this.app.workspace.activeEditor?.editor;
+                        if (editor) {
+                            const view = this.app.workspace.getLeaf().view;
+                            //@ts-ignore
+                            this.app.commands.commands['obsidian-tasks-plugin:edit-task']
+                                .editorCheckCallback(false, editor, view);
+                        }
                     }
                 } catch (err) {
                     new Notice("Error when trying open file: " + err, 5000);
@@ -166,11 +168,13 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
             );
             if (!this.app.workspace.activeEditor?.editor?.hasFocus())
                 this.app.workspace.activeEditor?.editor?.focus();
-            const editor = this.app.workspace.activeEditor?.editor!;
-            const view = this.app.workspace.getLeaf().view;
-            //@ts-ignore
-            this.app.commands.commands['obsidian-tasks-plugin:toggle-done']
-                .editorCheckCallback(false, editor, view);
+            const editor = this.app.workspace.activeEditor?.editor;
+            if (editor) {
+                const view = this.app.workspace.getLeaf().view;
+                //@ts-ignore
+                this.app.commands.commands['obsidian-tasks-plugin:toggle-done']
+                    .editorCheckCallback(false, editor, view);
+            }
         })
     }
 
