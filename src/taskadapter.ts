@@ -32,6 +32,19 @@ export class ObsidianTaskAdapter {
         }
     }
 
+    includePathsFilter(filter: string[]) {
+        const isParent = (parent: string, path: string) => {
+            if (parent.length > path.length) return false;
+            const paths = path.split('/');
+            const parents = parent.split('/');
+            return parents.every((v, i) => v === paths[i]);
+        };
+        return (file: TFile) => {
+            const fileName = file.path;
+            return filter.some((path) => isParent(path, fileName));
+        }
+    }
+
     fileIncludeTagsFilter(filter: string[]) {
         return (file: TFile) => {
             const cache = this.app.metadataCache.getFileCache(file);
@@ -48,10 +61,12 @@ export class ObsidianTaskAdapter {
         }
     }
 
-    async generateTasksList(pathFilter: string[], includeTags: string[], excludeTags: string[]) {
+    async generateTasksList(includeFilter: string[], pathFilter: string[], includeTags: string[], excludeTags: string[]) {
         this.tasksList.length = 0;
         const files = app.vault.getMarkdownFiles()
         let filteredFiles = files;
+        if (includeFilter.length !== 0)
+            filteredFiles = filteredFiles.filter(this.includePathsFilter(includeFilter));
         if (pathFilter.length !== 0)
             filteredFiles = filteredFiles.filter(this.pathsFilter(pathFilter));
         if (includeTags.length !== 0)
