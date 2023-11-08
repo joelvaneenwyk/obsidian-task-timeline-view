@@ -74,12 +74,18 @@ export class ObsidianTaskAdapter {
         if (excludeTags.length !== 0)
             filteredFiles = filteredFiles.filter(this.fileExcludeTagsFilter(excludeTags));
 
-        await filteredFiles.forEach(async (file: TFile) => {
+        filteredFiles.forEach(async (file: TFile) => {
             const link = Link.file(file.path);
-            const fileContent = await this.app.vault.cachedRead(file);
-            const cache = this.app.metadataCache.getFileCache(file);
-            cache?.listItems?.forEach(this.fromItemCache(link, file.path, fileContent,
-                cache.sections, cache.links, cache.frontmatter, cache.tags));
+            this.app.vault.cachedRead(file)
+                .then((content: string) => {
+                    const cache = this.app.metadataCache.getFileCache(file);
+                    cache?.listItems?.forEach(
+                        this.fromItemCache(link, file.path, content, cache.sections, cache.links, cache.frontmatter, cache.tags)
+                    );
+                })
+                .catch(reason => {
+                    console.error("Read file from obsidian cache failed: " + reason)
+                })
         })
     }
 
