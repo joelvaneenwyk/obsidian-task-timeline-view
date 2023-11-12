@@ -129,13 +129,14 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
             this.app.workspace.openLinkText('', path).then(() => {
                 try {
                     const file = this.app.workspace.getActiveFile();
-                    this.app.workspace.getLeaf().openFile(file!, { state: { mode: "source" } });
+                    file && this.app.workspace.getLeaf().openFile(file, { state: { mode: "source" } });
                     this.app.workspace.activeEditor?.editor?.setSelection(
                         { line: position.start.line, ch: position.start.col },
                         { line: position.start.line, ch: position.end.col }
                     )
-                    if (!this.app.workspace.activeEditor?.editor?.hasFocus())
+                    if (!this.app.workspace.activeEditor?.editor?.hasFocus()) {
                         this.app.workspace.activeEditor?.editor?.focus();
+                    }
                     if (openTaskEdit) {
                         const editor = this.app.workspace.activeEditor?.editor;
                         if (editor) {
@@ -179,8 +180,8 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
     }
 
     render(): React.ReactNode {
-        console.log("Now the root node are rendering with: ", this.state.taskList)
-        console.log("Now the root node are reddering with: ", this.state.userOptions)
+        console.debug("Now the root node are rendering with: ", this.state.taskList)
+        console.debug("Now the root node are reddering with: ", this.state.userOptions)
         return (
             <QuickEntryHandlerContext.Provider
                 value={{
