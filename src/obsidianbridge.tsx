@@ -84,11 +84,11 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
     }
 
     handleCreateNewTask(path: string, append: string) {
-        const taskStr = "- [ ] " + append + "\n";
+        const taskStr = "- [ ] " + append;
         const section = this.state.userOptions.sectionForNewTasks;
         this.app.vault.adapter.exists(path).then(exist => {
             if (!exist && confirm("No such file: " + path + ". Would you like to create it?")) {
-                const content = section + "\n\n" + taskStr;
+                const content = section + "\n" + taskStr;
                 this.app.vault.create(path, content)
                     .then(() => {
                         this.onUpdateTasks();
