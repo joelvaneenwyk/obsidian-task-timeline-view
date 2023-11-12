@@ -117,11 +117,10 @@ class QuickEntry extends React.Component<Record<string, unknown>, QuickEntryStat
         this.quickEntryPanel = React.createRef<HTMLDivElement>();
 
         this.state = {
-            selectedFile: "",
+            selectedFile: "Inbox.md",
             action: "append",
             filters: [],
         }
-
     }
 
 
@@ -203,24 +202,28 @@ class QuickEntry extends React.Component<Record<string, unknown>, QuickEntryStat
                         </select>
                         {this.state.action === "append"
                             ?
-                            <select name='File name' className='fileSelect' ref={this.fileSecect} aria-label='Select a note to add a new task to'
-                                onChange={this.onQuickEntryFileSelectChange} value={this.state.selectedFile}>
-                                <UserOptionContext.Consumer>{({ taskFiles }) =>
-                                    [...taskFiles].map((f, i) => {
-                                        const secondParentFolder =
-                                            !(f.split("/")[f.split("/").length - 3]) ? "" : "… / ";
-                                        const parentFolder =
-                                            !(f.split("/")[f.split("/").length - 2]) ? "" :
-                                                (secondParentFolder + "📂 " + f.split("/")[f.split("/").length - 2] + " / ");
-                                        const filePath = parentFolder + "📄 " + getFileTitle(f);
-                                        return (
-                                            <option style={{ whiteSpace: "nowrap" }} value={f} title={f} key={i}>
-                                                {filePath}
-                                            </option>);
-                                    })
-                                }
-                                </UserOptionContext.Consumer>
-                            </select>
+                            <UserOptionContext.Consumer>{({ taskFiles }) =>
+                                <select name='File name' className='fileSelect' ref={this.fileSecect} aria-label='Select a note to add a new task to'
+                                    onChange={this.onQuickEntryFileSelectChange} defaultValue={taskFiles[0]} >
+                                    {
+                                        [...taskFiles].map(
+                                            (f, i) => {
+                                                const secondParentFolder =
+                                                    !(f.split("/")[f.split("/").length - 3]) ? "" : "… / ";
+                                                const parentFolder =
+                                                    !(f.split("/")[f.split("/").length - 2]) ? "" :
+                                                        (secondParentFolder + "📂 " + f.split("/")[f.split("/").length - 2] + " / ");
+                                                const filePath = parentFolder + "📄 " + getFileTitle(f);
+                                                return (
+                                                    <option style={{ whiteSpace: "nowrap" }} value={f} title={f} key={i} >
+                                                        {filePath}
+                                                    </option>);
+                                            }
+                                        )
+                                    }
+                                </select>
+                            }
+                            </UserOptionContext.Consumer>
                             :
                             <MultiSelect key={0} name='Filter Type'
                                 className='filterSelector'
@@ -230,7 +233,6 @@ class QuickEntry extends React.Component<Record<string, unknown>, QuickEntryStat
                                 visual={['➕', '📆 date', '⏫ priority']} />
 
                         }
-
                     </div>
 
                     <div className='left'>
@@ -265,7 +267,10 @@ class QuickEntry extends React.Component<Record<string, unknown>, QuickEntryStat
                         <button className='ok' ref={this.okButton} aria-label='Append new task to selected note'
                             onClick={() => {
                                 if (this.state.action === 'append') {
-                                    const filePath = this.state.selectedFile;
+                                    // there is an issue with this.state.selectedFile:
+                                    // the value is not setted when initialize.
+                                    // using this.fileSecect.current?.value for emergency.
+                                    const filePath = this.fileSecect.current?.value; // this.state.selectedFile;
                                     const newTask = this.textInput.current?.value;
                                     if (!newTask || !filePath) return;
                                     if (newTask.length > 1) {
