@@ -113,8 +113,9 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
             quickEntryFiles.add(daileNoteFolder + dailyNoteFileName);
 
         const baseStyles = [...new Set(styles)].join(" ");
-        const counterFilter = this.state.filter.length === 0 ?
-            "" : this.state.filter + this.props.userOptions.counterBehavior;
+        const counterFilter = this.state.filter.length === 0 ? "" :
+            this.state.filter + " " +
+            this.props.userOptions.counterBehavior;
         const todayFocus = this.state.todayFocus ? "todayFocus" : "";
         return (
             <div className={`taskido ${baseStyles} ${counterFilter} ${todayFocus}`}
