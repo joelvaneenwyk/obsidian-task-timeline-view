@@ -169,7 +169,7 @@ export class ObsidianTaskAdapter {
      * @param outLinks Links from Obsidian.
      * //@param children 
      * //@param annotated 
-     * @param fontMatter The yaml data in the header of the file where the list item belongs.
+     * @param frontMatter The yaml data in the header of the file where the list item belongs.
      * @param tags Tag list contained in the list item.
      * @returns A TaskDataModel with basic information if the list item is a Task, null if it is not.
      */
@@ -181,7 +181,7 @@ export class ObsidianTaskAdapter {
         outLinks: Link[],
         //children: TaskDataModel[],
         //annotated: boolean,
-        fontMatter: Record<string, string> | undefined,
+        frontMatter: Record<string, string> | undefined,
         tags: string[],
     ): TaskDataModel | null {
         // Check the line to see if it is a markdown task.
@@ -210,12 +210,16 @@ export class ObsidianTaskAdapter {
             description = description.replace(TaskRegularExpressions.blockLinkRegex, '').trim();
         }
 
-        if (fontMatter) {
-            if (fontMatter["tag"] && typeof (fontMatter["tag"]) === "string") {
-                tags.push(fontMatter["tag"]);
+        if (frontMatter) {
+            if (frontMatter["tag"] && typeof (frontMatter["tag"]) === "string") {
+                // add # as prefix if there is not such prefix
+                // But it seems unnecessary to judge cuz in obsidian # prefix is not allowed for the frontmatter tags
+                const frontmatterTagPrefix = frontMatter["tag"].startsWith("#") ? "" : "#";
+                tags.push(frontmatterTagPrefix + frontMatter["tag"]);
             }
-            if (fontMatter["tags"] && typeof (fontMatter["tags"]) === typeof (new Array<string>())) {
-                (fontMatter["tags"] as unknown as Array<string>).forEach(t => tags.push(t));
+            if (frontMatter["tags"] && typeof (frontMatter["tags"]) === typeof (new Array<string>())) {
+                // add # as prefix if there is not such prefix
+                (frontMatter["tags"] as unknown as Array<string>).forEach(t => tags.push(t.startsWith("#") ? "" : "#" + t));
             }
         }
 
@@ -250,7 +254,7 @@ export class ObsidianTaskAdapter {
             priority: "",
             //happens: new Map<string, string>(),
             recurrence: "",
-            fontMatter: fontMatter || {},
+            fontMatter: frontMatter || {},
             isTasksTask: false,
             due: undefined,
             scheduled: undefined,
