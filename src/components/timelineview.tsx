@@ -132,19 +132,19 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
                         useBuiltinStyle: this.props.userOptions.useBuiltinStyle,
                         counters: [
                             {
-                                onClick: () => { this.handleCounterFilterClick('todo') },
+                                onClick: () => { this.handleCounterFilterClick('todoFilter') },
                                 cnt: todoCount,
                                 label: "Todo",
                                 id: "todo",
                                 ariaLabel: "Todo Tasks"
                             }, {
-                                onClick: () => { this.handleCounterFilterClick('overdue') },
+                                onClick: () => { this.handleCounterFilterClick('overdueFilter') },
                                 cnt: overdueCount,
                                 id: "overdue",
                                 label: "Overdue",
                                 ariaLabel: "Overdue Tasks"
                             }, {
-                                onClick: () => { this.handleCounterFilterClick('unplanned') },
+                                onClick: () => { this.handleCounterFilterClick('unplannedFilter') },
                                 cnt: unplannedCount,
                                 id: "unplanned",
                                 label: "Unplanned",
