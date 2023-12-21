@@ -275,6 +275,9 @@ class QuickEntry extends React.Component<Record<string, unknown>, QuickEntryStat
                                     if (!newTask || !filePath) return;
                                     if (newTask.length > 1) {
                                         callback.handleCreateNewTask(filePath, newTask);
+                                        if (this.textInput.current) {
+                                            this.textInput.current.value = "";
+                                        }
                                     } else {
                                         this.textInput.current?.focus();
                                     }
