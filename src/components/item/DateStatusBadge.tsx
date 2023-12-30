@@ -2,7 +2,7 @@
  * @deprecated
  */
 import React, { ReactElement } from "react";
-import TaskItemInfoBadge from "./badge";
+import TaskItemInfoBadge from "./TaskItemInfoBadge";
 
 function CalenderIcon({ icon }: { icon: JSX.Element }) {
     icon.props["width"] = 14

@@ -6,7 +6,8 @@ import { UserOption, defaultUserOptions } from '../../src/settings';
 import * as TaskMapable from '../../utils/taskmapable';
 import { TaskDataModel } from '../../utils/tasks';
 import { QuickEntryHandlerContext, TaskItemEventHandlersContext } from './components/context';
-import { TimelineView } from './components/timelineview';
+// import { TimelineView } from './components/timelineview';
+import TimelineApp from './TimelineApp';
 
 const defaultObsidianBridgeProps = {
     plugin: {} as ItemView,
@@ -196,7 +197,8 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
                     //@ts-ignore
                     handleModifyTask: this.app.plugins.plugins['obsidian-tasks-plugin'] === undefined ? undefined : this.handleModifyTask,
                 }}>
-                    <TimelineView userOptions={this.state.userOptions} taskList={this.state.taskList} />
+                    {/* <TimelineView userOptions={this.state.userOptions} taskList={this.state.taskList} /> */}
+                    <TimelineApp taskList={this.state.taskList} />
                 </TaskItemEventHandlersContext.Provider>
             </QuickEntryHandlerContext.Provider>
         )

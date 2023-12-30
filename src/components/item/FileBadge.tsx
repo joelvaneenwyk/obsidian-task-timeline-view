@@ -1,7 +1,7 @@
 /**
  * @deprecated
  */
-import TaskItemInfoBadge from "./badge";
+import TaskItemInfoBadge from "./TaskItemInfoBadge";
 import { iconMap } from "../asserts/icons";
 import { getFileTitle } from "../../util";
 

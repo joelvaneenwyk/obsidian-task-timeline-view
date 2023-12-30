@@ -1,6 +1,6 @@
 import React from "react";
 import { MouseEventHandler } from "react";
-import TaskItemInfoBadge from "./badge";
+import TaskItemInfoBadge from "./TaskItemInfoBadge";
 
 
 function IconTextBadge({
@@ -12,6 +12,7 @@ function IconTextBadge({
     ariaLabel,
     ariaLabelSuffix,
     onClick,
+    color: iconColor,
 }: {
     icon: JSX.Element,
     labelPrefix?: string,
@@ -21,6 +22,7 @@ function IconTextBadge({
     ariaLabel?: string,
     ariaLabelSuffix?: string,
     onClick?: MouseEventHandler,
+    color?: string,
 }) {
     labelPrefix = labelPrefix || "";
     labelSuffix = labelSuffix || "";
@@ -34,6 +36,7 @@ function IconTextBadge({
             label={labelPrefix + label + labelSuffix}
             ariaLabel={"" + ariaLabelPrefix + ariaLabel + labelSuffix}
             onClick={onClick}
+            className={iconColor}
         />
     )
 }

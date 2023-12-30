@@ -4,8 +4,9 @@ import { UserOption } from '../../../src/settings';
 import * as TaskMapable from '../../../utils/taskmapable';
 import { innerDateFormat, TaskDataModel, TaskStatus } from '../../../utils/tasks';
 import { TaskListContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
-import { YearView } from './yearview';
-
+// import { YearView } from './yearview';
+import YearAccordion from './year/YearAccordion';
+import { NextUIProvider } from "@nextui-org/react";
 
 const defaultTimelineProps = {
     userOptions: {} as UserOption,
@@ -117,56 +118,90 @@ export class TimelineView extends React.Component<TimelineProps, TimelineStates>
             this.state.filter + " " +
             this.props.userOptions.counterBehavior;
         const todayFocus = this.state.todayFocus ? "todayFocus" : "";
+
+        const yearDateTaskMap = new Map<number, Map<moment.Moment, TaskDataModel[]>>();
+        years.forEach((y) => {
+            // yearDateTaskMap.set(y, new Map());
+            const tasksOfThisYear = taskList.filter(TaskMapable.filterYear(moment().year(y)));
+            const datesEnvolved = new Set<moment.Moment>();
+            tasksOfThisYear.forEach(t => {
+                t.created && datesEnvolved.add(t.created);
+                t.scheduled && datesEnvolved.add(t.scheduled);
+                t.completion && datesEnvolved.add(t.completion);
+                t.start && datesEnvolved.add(t.start);
+                t.due && datesEnvolved.add(t.due);
+                // t.dates && t.dates.size > 0 && [...t.dates.values()].forEach((d) => datesEnvolved.add(d));
+            })
+
+            const dateTaskMap = new Map<moment.Moment, TaskDataModel[]>();
+
+            new Set([...datesEnvolved.keys()].sort((a, b) => {
+                if (a.isBefore(b)) return -1;
+                else if (a.isAfter(b)) return 1;
+                return 0;
+            })).forEach((d) => {
+                dateTaskMap.set(d, taskList.filter(TaskMapable.filterDate(d)));
+            })
+            yearDateTaskMap.set(y, dateTaskMap);
+        })
+        console.log(yearDateTaskMap)
+
         return (
-            <div className={`taskido ${baseStyles} ${counterFilter} ${todayFocus}`}
-                id={`taskido${(new Date()).getTime()}`
-                }>
-                <TodayFocusEventHandlersContext.Provider value={{ handleTodayFocusClick: this.handleTodayFocus }}>
-                    <UserOptionContext.Provider value={{
-                        hideTags: this.props.userOptions.hideTags,
-                        tagPalette: this.props.userOptions.tagColorPalette,
-                        dateFormat: this.props.userOptions.dateFormat,
-                        taskFiles: [...quickEntryFiles],
-                        select: this.props.userOptions.inbox,
-                        forward: this.props.userOptions.forward,
-                        useBuiltinStyle: this.props.userOptions.useBuiltinStyle,
-                        counters: [
-                            {
-                                onClick: () => { this.handleCounterFilterClick('todoFilter') },
-                                cnt: todoCount,
-                                label: "Todo",
-                                id: "todo",
-                                ariaLabel: "Todo Tasks"
-                            }, {
-                                onClick: () => { this.handleCounterFilterClick('overdueFilter') },
-                                cnt: overdueCount,
-                                id: "overdue",
-                                label: "Overdue",
-                                ariaLabel: "Overdue Tasks"
-                            }, {
-                                onClick: () => { this.handleCounterFilterClick('unplannedFilter') },
-                                cnt: unplannedCount,
-                                id: "unplanned",
-                                label: "Unplanned",
-                                ariaLabel: "Unplanned Tasks"
-                            }
-                        ]
-                    }}>
-                        <span>
-                            {years.map((y, i) => (
-                                <TaskListContext.Provider value={
-                                    {
-                                        taskList: taskList.filter(TaskMapable.filterYear(moment().year(y))),
-                                        entryOnDate: this.props.userOptions.entryPosition === "top" ? firstDay! :
-                                            this.props.userOptions.entryPosition === "bottom" ? lastDay! : moment().format(innerDateFormat),
-                                    }
-                                } key={i}>
-                                    <YearView year={y} key={y} />
-                                </TaskListContext.Provider>
-                            ))}
-                        </span>
-                    </UserOptionContext.Provider>
-                </TodayFocusEventHandlersContext.Provider>
-            </div >)
+            <NextUIProvider>
+                <div className={`taskido ${baseStyles} ${counterFilter} ${todayFocus}`}
+                    id={`taskido${(new Date()).getTime()}`
+                    }>
+                    <TodayFocusEventHandlersContext.Provider value={{ handleTodayFocusClick: this.handleTodayFocus }}>
+                        <UserOptionContext.Provider value={{
+                            hideTags: this.props.userOptions.hideTags,
+                            tagPalette: this.props.userOptions.tagColorPalette,
+                            dateFormat: this.props.userOptions.dateFormat,
+                            taskFiles: [...quickEntryFiles],
+                            select: this.props.userOptions.inbox,
+                            forward: this.props.userOptions.forward,
+                            useBuiltinStyle: this.props.userOptions.useBuiltinStyle,
+                            counters: [
+                                {
+                                    onClick: () => { this.handleCounterFilterClick('todoFilter') },
+                                    cnt: todoCount,
+                                    label: "Todo",
+                                    id: "todo",
+                                    ariaLabel: "Todo Tasks"
+                                }, {
+                                    onClick: () => { this.handleCounterFilterClick('overdueFilter') },
+                                    cnt: overdueCount,
+                                    id: "overdue",
+                                    label: "Overdue",
+                                    ariaLabel: "Overdue Tasks"
+                                }, {
+                                    onClick: () => { this.handleCounterFilterClick('unplannedFilter') },
+                                    cnt: unplannedCount,
+                                    id: "unplanned",
+                                    label: "Unplanned",
+                                    ariaLabel: "Unplanned Tasks"
+                                }
+                            ]
+                        }}>
+                            <span>
+                                {years.map((y, i) => (
+                                    <TaskListContext.Provider value={
+                                        {
+                                            taskList: taskList.filter(TaskMapable.filterYear(moment().year(y))),
+                                            entryOnDate: this.props.userOptions.entryPosition === "top" ? firstDay! :
+                                                this.props.userOptions.entryPosition === "bottom" ? lastDay! : moment().format(innerDateFormat),
+                                        }
+                                    } key={i}>
+                                        {/* <YearView year={y} key={y} /> */}
+                                        <YearAccordion key={y}
+                                            year={y}
+                                            dateTaskMap={yearDateTaskMap.get(y)!}
+                                        />
+                                    </TaskListContext.Provider>
+                                ))}
+                            </span>
+                        </UserOptionContext.Provider>
+                    </TodayFocusEventHandlersContext.Provider>
+                </div >
+            </NextUIProvider>)
     }
 }

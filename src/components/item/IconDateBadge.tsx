@@ -1,7 +1,7 @@
 import React from "react";
 import { MouseEventHandler } from "react";
 import moment from "moment";
-import IconTextBadge from "./icon_text_badge";
+import IconTextBadge from "./IconTextBadge";
 import { innerDateFormat } from "../../../../utils/tasks";
 
 
@@ -13,6 +13,7 @@ function IconDateBadge({
     ariaLabelSuffix,
     date,
     onClick,
+    color: iconColor,
 }: {
     icon: JSX.Element,
     labelPrefix?: string,
@@ -21,6 +22,7 @@ function IconDateBadge({
     ariaLabelSuffix?: string,
     date: moment.Moment,
     onClick?: MouseEventHandler,
+    color?: string,
 }) {
 
     labelPrefix = labelPrefix || "";
@@ -39,6 +41,7 @@ function IconDateBadge({
             ariaLabelSuffix={ariaLabelSuffix}
             label={label}
             ariaLabel={label}
+            color={iconColor}
         />
     )
 }

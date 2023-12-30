@@ -31,6 +31,8 @@ function TaskItemInfoBadge(
         onClick,
         color,
         isIconOnly,
+        className,
+        iconColor: iconStyle,
     }: {
         label?: string,
         ariaLabel?: string,
@@ -38,6 +40,8 @@ function TaskItemInfoBadge(
         onClick?: MouseEventHandler,
         color?: "default" | "primary" | "secondary" | "success" | "warning" | "danger",
         isIconOnly?: boolean,
+        className?: string,
+        iconColor?: string,
     }
 ) {
     isIconOnly = isIconOnly || false;
@@ -49,12 +53,13 @@ function TaskItemInfoBadge(
         <Chip startContent={icon || ""}
             aria-label={ariaLabel || ""}
             onClick={onClick}
-            variant="light"
+            variant="flat"
             color={color || "default"}
-            // className=" border-opacity-50 hover:border-opacity-100"
+            className={className}
             classNames={{
-                base: "h-15 pt-0.5 pb-0.5 pl-1 pr-1 border-opacity-50 hover:border-opacity-100",
-                content: "text-md pr-0 align-middle " + contentPaddingLeft,
+                base: "h-15 w-full pt-0.5 pb-0.5 pl-1 pr-1 border-opacity-50 hover:border-opacity-100",
+                content: "text-md pr-0 align-middle font-mono " + contentPaddingLeft,
+                avatar: iconStyle,
             }}
         >
             {label}

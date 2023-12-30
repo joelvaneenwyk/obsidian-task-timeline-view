@@ -4,7 +4,8 @@ import { getFileTitle } from '../../../dataview-util/dataview';
 import { TaskStatus, doneDateSymbol, dueDateSymbol, recurrenceSymbol, scheduledDateSymbol, startDateSymbol } from '../../../utils/tasks';
 import * as Icons from './asserts/icons';
 import { QuickEntryHandlerContext, TaskListContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
-import { TaskItemView } from './taskitemview';
+// import { TaskItemView } from './taskitemview';
+import TaskDateAccordionItem from "./date/TaskDateAccordionItem"
 
 const defaultDateProps = {
     date: moment(),
@@ -37,7 +38,8 @@ export class DateView extends React.Component<DateViewProps> {
                                         data-year={this.props.date.format("YYYY")}
                                         data-types={[...new Set(taskList.map((t => t.status)))].join(" ")}>
                                         <TaskListContext.Provider value={{ taskList: taskList, entryOnDate: entryOnDate }}>
-                                            <NormalDateContent date={this.props.date} />
+                                            {/* <NormalDateContent date={this.props.date} /> */}
+                                            <TaskDateAccordionItem taskList={taskList} date={this.props.date} />
                                         </TaskListContext.Provider>
                                     </div>
                                 </div>
@@ -78,7 +80,7 @@ class NormalDateContent extends React.Component<NormalDateContentProps> {
             <TaskListContext.Consumer>
                 {({ taskList }) => (
                     <div className='content'>
-                        {taskList.map((t, i) => <TaskItemView key={i} taskItem={t} />)}
+                        {taskList.map((t, i) => <TaskItemCard key={i} item={t} />)}
                     </div>
                 )}
             </TaskListContext.Consumer>

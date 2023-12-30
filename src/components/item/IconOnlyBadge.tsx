@@ -1,5 +1,5 @@
 import { MouseEventHandler } from "react";
-import TaskItemInfoBadge from "./badge";
+import TaskItemInfoBadge from "./TaskItemInfoBadge";
 
 function PencilIcon() {
     return (
