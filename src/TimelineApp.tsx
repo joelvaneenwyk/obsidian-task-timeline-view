@@ -1,30 +1,34 @@
-import React from "react";
-import { TaskDataModel, innerDateFormat } from "../../utils/tasks";
+import React, { useMemo, useState } from "react";
 import { NextUIProvider } from "@nextui-org/react";
 import moment from "moment";
 import YearAccordion from "./components/year/YearAccordion";
-import * as TaskMapable from '../../utils/taskmapable';
 import InputPanel from "./components/input/InputPanel";
-import Filter from './components/filter/Filter';
+import FilterSelectorList from './components/filter_sort/FilterSortSelectorList';
+import { FilterSortOptions, SelectedFilterSortOptions } from "./components/filter_sort/types";
+import getTaskDateList, { TaskItem } from "./tasks/TaskItem";
+import * as TaskItemDateFilter from "./tasks/TaskItemUtil";
+
+export const innerDateFormat = "YYYY-MM-DD";
+
 function TimelineApp({
     taskList,
 }: {
-    taskList: TaskDataModel[],
+    taskList: TaskItem[],
 }) {
+    console.log("TimeLine item list: ", taskList)
+    const tags = taskList.flatMap(item => Array.from(item.tags)).unique();
+    const files = taskList.map(item => item.position.visual).unique();
+    const priorities = taskList.map(item => item.priority.toString()).unique();
+    const status = taskList.map(item => item.status.toString()).unique();
 
     taskList = taskList.map((t) => {
-        t.dates.set("today", moment());
+        t.dateTime!.misc = new Map();
+        t.dateTime?.misc.set("today", moment());
         return t;
     })
 
     const sortedInvolvedDates = taskList.flatMap((t) => {
-        const dates: moment.Moment[] = new Array<moment.Moment>();
-        t.created && dates.push(t.created);
-        t.start && dates.push(t.start);
-        t.scheduled && dates.push(t.scheduled);
-        t.completion && dates.push(t.completion);
-        t.dates && dates.concat(...t.dates.values());
-        return dates.unique()
+        return getTaskDateList(t).unique()
     })
         .unique()
         .sort((a, b) => {
@@ -34,12 +38,13 @@ function TimelineApp({
         });
 
     const sortedInvolvedYears: number[] = sortedInvolvedDates.flatMap((d) => {
-        return +d.format("YYYY");
+        return d.year();
     })
         .unique()
         .sort((a, b) => a - b);
 
-    const yearDateTaskMap: Map<number, Map<string, TaskDataModel[]>> =
+    console.log("years: ", sortedInvolvedYears, sortedInvolvedDates);
+    const yearDateTaskMap: Map<number, Map<string, TaskItem[]>> =
         new Map(
             sortedInvolvedYears.map((y) => {
                 return {
@@ -50,7 +55,7 @@ function TimelineApp({
                             .map((d) => {
                                 return {
                                     key: d.format(innerDateFormat),
-                                    value: taskList.filter(TaskMapable.filterDate(d))
+                                    value: taskList.filter(TaskItemDateFilter.filterDate(d))
                                 }
                             })
                             .map(e => [e.key, e.value])
@@ -59,18 +64,45 @@ function TimelineApp({
             }).map(e => [e.key, e.value])
         );
 
+    const [selectedFilters, setSelectedFilters] = useState(
+        {
+            tags: [],
+            files: [],
+            priorities: [],
+            status: [],
+            sortCmp: "aaa",
+            reversed: false,
+        } as SelectedFilterSortOptions);
 
-    console.log(yearDateTaskMap);
+    const FilterSortSelectorListCached = useMemo(
+        () => <FilterSelectorList
+            options={{
+                tags: tags,
+                files: files,
+                priorities: priorities,
+                status: status,
+                sortCmp: ["aaa", "vvv", "ccc"],
+                reversed: false,
+            } as FilterSortOptions}
+            selectedFilters={selectedFilters}
+            setSelectedFilters={setSelectedFilters}
+        />,
+        [tags, files, priorities, status]
+    )
+
     return (
         <NextUIProvider>
-            <InputPanel
-                newItemDestinationOptions={["a", "b", "ccc"]}
-            />
-            <Filter />
+            <div className="gap-2 flex flex-col">
+                <InputPanel
+                    newItemDestinationOptions={["a", "b", "ccc"]}
+                />
+                {FilterSortSelectorListCached}
+                <div>{selectedFilters.files}{selectedFilters.priorities}{selectedFilters.status}{selectedFilters.tags}</div>
+            </div>
             {sortedInvolvedYears.map((y) => (
                 <YearAccordion key={y}
                     year={y}
-                    dateTaskMap={yearDateTaskMap.get(y) || {} as Map<string, TaskDataModel[]>}
+                    dateTaskMap={yearDateTaskMap.get(y) || {} as Map<string, TaskItem[]>}
                 />
             ))}
         </NextUIProvider>

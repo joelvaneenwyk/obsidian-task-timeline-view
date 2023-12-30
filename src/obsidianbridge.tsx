@@ -8,6 +8,7 @@ import { TaskDataModel } from '../../utils/tasks';
 import { QuickEntryHandlerContext, TaskItemEventHandlersContext } from './components/context';
 // import { TimelineView } from './components/timelineview';
 import TimelineApp from './TimelineApp';
+import { BasicTaskItemPriority, BasicTaskItemStatus, TaskItem, TaskItemDateTime } from './tasks/TaskItem';
 
 const defaultObsidianBridgeProps = {
     plugin: {} as ItemView,
@@ -183,6 +184,32 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
     render(): React.ReactNode {
         console.debug("Now the root node are rendering with: ", this.state.taskList)
         console.debug("Now the root node are reddering with: ", this.state.userOptions)
+
+        const timelineTasks = this.state.taskList.map(
+            (item) => {
+                return {
+                    dateTime: {
+                        created: item.created,
+                        due: item.due,
+                        completion: item.completion,
+                        start: item.start,
+                        scheduled: item.scheduled,
+                        misc: item.dates,
+                    } as TaskItemDateTime,
+                    recurrence: item.recurrence,
+                    status: item.status as unknown as BasicTaskItemStatus,
+                    priority: item.priority as unknown as BasicTaskItemPriority,
+                    text: item.text,
+                    visual: item.visual,
+                    tags: new Set(item.tags),
+                    position: {
+                        visual: item.path,
+                    },
+                    meta: item.fontMatter,
+                } as TaskItem
+            }
+        )
+
         return (
             <QuickEntryHandlerContext.Provider
                 value={{
@@ -198,9 +225,9 @@ export class ObsidianBridge extends React.Component<ObsidianBridgeProps, Obsidia
                     handleModifyTask: this.app.plugins.plugins['obsidian-tasks-plugin'] === undefined ? undefined : this.handleModifyTask,
                 }}>
                     {/* <TimelineView userOptions={this.state.userOptions} taskList={this.state.taskList} /> */}
-                    <TimelineApp taskList={this.state.taskList} />
+                    <TimelineApp taskList={timelineTasks} />
                 </TaskItemEventHandlersContext.Provider>
-            </QuickEntryHandlerContext.Provider>
+            </QuickEntryHandlerContext.Provider >
         )
     }
 }

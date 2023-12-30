@@ -1,19 +1,20 @@
 import { Accordion, AccordionItem, Card, CardBody, CardHeader } from "@nextui-org/react";
 import React from "react";
-import { TaskDataModel, TaskStatus, innerDateFormat } from '../../../../utils/tasks';
 import moment from "moment";
 import TaskItemCheckbox from "../item/TaskItemCheckbox";
 import DateTaskStatisticsLine from '../date/DateTaskStatisticsLine';
 import DateCalendarIcon from "../date/DateCalendarIcon";
 import YearHeaderProgress from "./YearHeaderProgress";
 import YearUnfinishedTip from "./YearUnfinishedTip";
+import { TaskItem, BasicTaskItemStatus } from "Obsidian-Tasks-Timeline/src/tasks/TaskItem";
+import { innerDateFormat } from "Obsidian-Tasks-Timeline/src/TimelineApp";
 
 function YearAccordion({
     year,
     dateTaskMap,
 }: {
     year: number,
-    dateTaskMap: Map<string, TaskDataModel[]>
+    dateTaskMap: Map<string, TaskItem[]>
 }) {
     const dates = [...dateTaskMap.keys()]
         .sort((a, b) => {
@@ -37,13 +38,16 @@ function YearAccordion({
     );
     const completeCntOfThisYear = [...dateTaskMap.entries()].reduce(
         (result, entry) => result + entry[1].reduce(
-            (completeCntInADay, item) => completeCntInADay + (item.completed ? 1 : 0),
+            (completeCntInADay, item) => completeCntInADay +
+                (item.status === BasicTaskItemStatus.Done ? 1 : 0),
             0
         ),
         0
     );
     const daysWithUnfinishedTasks = [...dateTaskMap.entries()].reduce(
-        (result, entry) => result + (entry[1].some((item) => !item.completed) ? 1 : 0),
+        (result, entry) => result + (entry[1].some(
+            (item) => item.status !== BasicTaskItemStatus.Done) ? 1 : 0
+        ),
         0
     );
     const unfinishedTaskCntOfThisYear = totalTaskCnt - completeCntOfThisYear;
@@ -81,23 +85,27 @@ function YearAccordion({
                         const taskList = dateTaskMap.get(d) || [];
                         const formattedDate = d.format(innerDateFormat);
                         const overdueCnt = taskList.reduce(
-                            (result, item) => result + item.status === TaskStatus.overdue ? 1 : 0,
+                            (result, item) => result + item.status === BasicTaskItemStatus.Overdue ? 1 : 0,
                             0
                         );
                         const unplannedCnt = taskList.reduce(
-                            (result, item) => result + item.status === TaskStatus.unplanned ? 1 : 0,
+                            (result, item) => result + item.status === BasicTaskItemStatus.Unplanned ? 1 : 0,
                             0
                         );
                         const completeCnt = taskList.reduce(
-                            (result, item) => result + item.status === TaskStatus.done ? 1 : 0,
+                            (result, item) => result + item.status === BasicTaskItemStatus.Done ? 1 : 0,
                             0
                         );
                         const doingCnt = taskList.reduce(
-                            (result, item) => result + ([TaskStatus.start, TaskStatus.process].includes(item.status as TaskStatus) ? 1 : 0),
+                            (result, item) => result + item.status === BasicTaskItemStatus.Todo ? 1 : 0,
                             0
                         );
+                        const unStartCnt = taskList.reduce(
+                            (result, item) => result + item.status === BasicTaskItemStatus.Scheduled ? 1 : 0,
+                            0
+                        )
                         const cancelledCnt = taskList.reduce(
-                            (result, item) => result + item.status === TaskStatus.cancelled ? 1 : 0,
+                            (result, item) => result + item.status === BasicTaskItemStatus.Cancelled ? 1 : 0,
                             0
                         );
                         const todoCnt = taskList.length - overdueCnt - unplannedCnt - completeCnt - doingCnt - cancelledCnt;
@@ -108,6 +116,7 @@ function YearAccordion({
                             subtitle={
                                 <DateTaskStatisticsLine
                                     overdueCnt={overdueCnt}
+                                    scheduledCnt={unStartCnt}
                                     todoCnt={todoCnt}
                                     doingCnt={doingCnt}
                                     unplannedCnt={unplannedCnt}

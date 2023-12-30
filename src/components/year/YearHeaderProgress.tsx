@@ -17,7 +17,8 @@ function YearHeaderProgress({
             valueLabel={finished.toString() + " / " + total.toString()}
             size="sm"
             classNames={{
-                label: "text-sm"
+                base: "pt-2",
+                label: "text-sm",
             }}
         />
     )

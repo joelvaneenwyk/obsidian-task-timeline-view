@@ -1,77 +1,86 @@
 import IconOnlyBadge from "./IconOnlyBadge";
 import TagBadge from "./TagBadge";
-import { TaskDataModel, recurrenceSymbol } from "../../../../utils/tasks";
-import { MouseEventHandler } from "react";
+import { MouseEventHandler, useMemo } from "react";
 import { getFileTitle } from "../../util";
 import { iconMap } from "../asserts/icons";
 import { TaskItemEventHandlersContext } from "../context"
 import IconDateBadge from "./IconDateBadge";
 import IconTextBadge from "./IconTextBadge";
+import { TaskItem } from "Obsidian-Tasks-Timeline/src/tasks/TaskItem";
 
 function TaskInfoLine({
     item,
     onModifyTask,
 }: {
-    item: TaskDataModel
+    item: TaskItem
     onModifyTask?: MouseEventHandler,
-
 }) {
+
+    const dates = item.dateTime;
+
+    const buildBadge = (
+        date: moment.Moment | undefined,
+        ariaLabelPrefix: string,
+        icon: JSX.Element,
+        color?: string,
+    ) => {
+        if (!date) return <></>
+        return <IconDateBadge key={ariaLabelPrefix}
+            ariaLabelPrefix={ariaLabelPrefix}
+            date={date}
+            icon={icon}
+            color={color || "default"}
+        />
+    };
+
+    const createDateBadge = useMemo(
+        () => buildBadge(dates?.created, "create at ", iconMap.taskIcon),
+        [dates?.created]
+    );
+    const startDateBadge = useMemo(
+        () => buildBadge(dates?.start, "start at ", iconMap.startIcon),
+        [dates?.start]
+    );
+    const scheduledDateBadge = useMemo(
+        () => buildBadge(dates?.scheduled, "scheduled to ", iconMap.scheduledIcon),
+        [dates?.scheduled]
+    );
+    const dueDateBadge = useMemo(
+        () => buildBadge(dates?.due, "due at ", iconMap.dueIcon),
+        [dates?.due]
+    );
+    const completeDateBadge = useMemo(
+        () => buildBadge(dates?.completion, "complete at ", iconMap.doneIcon, "text-success"),
+        [dates?.completion]
+    );
+
     return (
         <div className="flex flex-col flex-wrap gap-1">
             <div key="datetime" className="flex flex-wrap gap-1">
                 {onModifyTask &&
                     <IconOnlyBadge key={1} onclick={onModifyTask} />}
-                {item.created &&
-                    <IconDateBadge key={2}
-                        ariaLabelPrefix="create at "
-                        date={item.created}
-                        icon={iconMap.taskIcon}
-                    />}
-                {item.start &&
-                    <IconDateBadge key={3}
-                        ariaLabelPrefix="start at "
-                        date={item.start}
-                        icon={iconMap.startIcon}
-                    />}
-                {item.scheduled &&
-                    <IconDateBadge key={4}
-                        ariaLabelPrefix="scheduled to "
-                        date={item.scheduled}
-                        icon={iconMap.scheduledIcon}
-                    />}
-                {item.due &&
-                    <IconDateBadge key={5}
-                        ariaLabelPrefix="due at "
-                        date={item.due}
-                        icon={iconMap.dueIcon}
-                        color="text-danger"
-                    />}
-                {item.completion &&
-                    <IconDateBadge key={6}
-                        ariaLabelPrefix="complete at "
-                        date={item.completion}
-                        icon={iconMap.doneIcon}
-                        color="text-success"
-                    />}
+                {createDateBadge}
+                {startDateBadge}
+                {scheduledDateBadge}
+                {dueDateBadge}
+                {completeDateBadge}
                 {item.recurrence &&
                     <IconTextBadge key={7}
                         ariaLabelPrefix="recurrent: "
-                        ariaLabel={item.recurrence.replace(recurrenceSymbol, '')}
-                        label={item.recurrence.replace(recurrenceSymbol, '')}
+                        ariaLabel={item.recurrence}
+                        label={item.recurrence}
                         icon={iconMap.repeatIcon}
                     />}
                 {item.priority &&
                     <IconTextBadge key={8}
                         ariaLabelPrefix="priority: "
-                        ariaLabel={item.priority}
-                        label={item.priority.length > 0 ? item.priority + "Priority" : "No Priority"}
+                        ariaLabel={item.priority.toString()}
+                        label={item.priority.toString().length > 0 ? item.priority + " Priority" : "No Priority"}
                         icon={iconMap.priorityIcon}
                     />}
                 <IconTextBadge key={9}
-                    ariaLabel={item.path}
-                    label={getFileTitle(item.path)}
-                    labelSuffix={item.section.subpath && item.section.subpath?.length > 0 ?
-                        (" > " + item.section.subpath) : ""}
+                    ariaLabel={item.position.visual}
+                    label={getFileTitle(item.position.visual)}
                     icon={iconMap.fileIcon}
                 />
             </div>

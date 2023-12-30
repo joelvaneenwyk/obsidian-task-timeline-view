@@ -2,7 +2,7 @@ import React from "react";
 import { MouseEventHandler } from "react";
 import moment from "moment";
 import IconTextBadge from "./IconTextBadge";
-import { innerDateFormat } from "../../../../utils/tasks";
+import { innerDateFormat } from "Obsidian-Tasks-Timeline/src/TimelineApp";
 
 
 function IconDateBadge({

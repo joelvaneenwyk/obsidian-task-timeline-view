@@ -1,15 +1,16 @@
 import React from "react";
 import { AccordionItem } from "@nextui-org/react";
 import moment from "moment";
-import { TaskDataModel, innerDateFormat } from "../../../../utils/tasks";
 import TaskItemCheckbox from "../item/TaskItemCheckbox";
+import { innerDateFormat } from "Obsidian-Tasks-Timeline/src/TimelineApp";
+import { TaskItem } from "Obsidian-Tasks-Timeline/src/tasks/TaskItem";
 
 function TaskDateAccordionItem({
     date,
     taskList,
 }: {
     date: moment.Moment,
-    taskList: TaskDataModel[],
+    taskList: TaskItem[],
 }) {
     const formattedDate = date.format(innerDateFormat);
     return (

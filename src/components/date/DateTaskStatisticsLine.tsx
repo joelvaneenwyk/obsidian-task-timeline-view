@@ -4,12 +4,14 @@ import { iconMap } from "../asserts/icons";
 
 function DateTaskStatisticsLine({
     todoCnt,
+    scheduledCnt,
     doingCnt,
     overdueCnt,
     unplannedCnt,
     completeCnt,
 }: {
     todoCnt: number,
+    scheduledCnt: number
     doingCnt: number,
     overdueCnt: number,
     unplannedCnt: number,
@@ -22,16 +24,23 @@ function DateTaskStatisticsLine({
         )
     }
     const ariaLabelSuffix = "tasks on this date.";
+    let badgeKey = 1;
     return (
         <div
             className="gap-2"
         >
-            {overdueCnt > 0 && <IconTextBadge key={1}
+            {overdueCnt > 0 && <IconTextBadge key={badgeKey++}
                 icon={iconMap.overdueIcon}
                 label={overdueCnt.toString()}
                 ariaLabelPrefix={overdueCnt.toString()}
                 ariaLabel={" overdue " + ariaLabelSuffix}
             // className="text-danger"
+            />}
+            {scheduledCnt > 0 && <IconTextBadge key={badgeKey++}
+                icon={iconMap.scheduledIcon}
+                label={scheduledCnt.toString()}
+                ariaLabelPrefix={scheduledCnt.toString()}
+                ariaLabel={" scheduled " + ariaLabelSuffix}
             />}
             {todoCnt > 0 && <IconTextBadge key={2}
                 icon={iconMap.scheduledIcon}
