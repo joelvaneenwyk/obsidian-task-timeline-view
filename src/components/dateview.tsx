@@ -1,7 +1,7 @@
 import moment from 'moment';
 import * as React from 'react';
-import { getFileTitle } from '../../../dataview-util/dataview';
-import { TaskStatus, doneDateSymbol, dueDateSymbol, recurrenceSymbol, scheduledDateSymbol, startDateSymbol } from '../../../utils/tasks';
+import { getFileTitle } from '../../../../dataview-util/dataview';
+import { TaskStatus, doneDateSymbol, dueDateSymbol, recurrenceSymbol, scheduledDateSymbol, startDateSymbol } from '../../../../utils/tasks';
 import * as Icons from './asserts/icons';
 import { QuickEntryHandlerContext, TaskListContext, TodayFocusEventHandlersContext, UserOptionContext } from './context';
 import { TaskItemView } from './taskitemview';

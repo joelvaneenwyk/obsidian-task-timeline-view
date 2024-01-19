@@ -1,6 +1,6 @@
 import { App, FrontMatterCache, LinkCache, ListItemCache, Pos, SectionCache, TagCache, TFile } from "obsidian";
-import { Link } from "../../dataview-util/markdown";
-import { TaskDataModel, TaskRegularExpressions } from "../../utils/tasks";
+import { Link } from "../../../dataview-util/markdown";
+import { TaskDataModel, TaskRegularExpressions } from "../../../utils/tasks";
 
 export class ObsidianTaskAdapter {
     private app: App;
@@ -100,7 +100,7 @@ export class ObsidianTaskAdapter {
      * @param links The link cache from Obsidian.
      * @param fontmatter The fontmatter cache from Obsidian.
      * @param tags The tag cache from Obsidian.
-     * @returns This funcion directly modify this.taskList. 
+     * @returns This funcion directly modify this.taskList.
      */
     private fromItemCache(link: Link, filePath: string, fileContent: string,
         sections?: SectionCache[], links?: LinkCache[], fontmatter?: FrontMatterCache, tagsCache?: TagCache[]) {
@@ -167,8 +167,8 @@ export class ObsidianTaskAdapter {
      * @param parent A Link object points to the parent section of the list item.
      * @param position A Pos object from Obsidian.
      * @param outLinks Links from Obsidian.
-     * //@param children 
-     * //@param annotated 
+     * //@param children
+     * //@param annotated
      * @param frontMatter The yaml data in the header of the file where the list item belongs.
      * @param tags Tag list contained in the list item.
      * @returns A TaskDataModel with basic information if the list item is a Task, null if it is not.

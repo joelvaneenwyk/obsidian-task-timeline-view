@@ -1,9 +1,9 @@
 import moment, { Moment } from "moment";
 import { MarkdownRenderer } from "obsidian";
 import * as React from "react";
-import { getFileTitle } from "../../../dataview-util/dataview";
-import { TasksTimelineView } from "../../../src/views";
-import { TaskDataModel, recurrenceSymbol } from "../../../utils/tasks";
+import { getFileTitle } from "../../../../dataview-util/dataview";
+import { TasksTimelineView } from "../../../../src/views";
+import { TaskDataModel, recurrenceSymbol } from "../../../../utils/tasks";
 import * as Icons from './asserts/icons';
 import { TaskItemEventHandlersContext, UserOptionContext } from "./context";
 

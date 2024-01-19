@@ -23,7 +23,7 @@
         ]
     },
     "include": [
-        "src/**/*", "../dataview-util/dataview.ts", "utils",
+        "src/**/*", "../../dataview-util/*", "../../utils/*",
     ],
     "exclude": [
         "node_modules",

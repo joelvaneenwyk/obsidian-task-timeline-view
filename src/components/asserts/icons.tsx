@@ -1,4 +1,4 @@
-import { TaskStatus } from "../../../../utils/tasks";
+import { TaskStatus } from "../../../../../utils/tasks";
 
 export const doneIcon = (
     <svg
