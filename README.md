@@ -1,6 +1,6 @@
-# Obsidian-Tasks-Timeline Component
+# obsidian-task-timeline-view Component
 
-This is a typescript re-implement for [Obsidian-Tasks-Timeline](https://github.com/702573N/Obsidian-Tasks-Timeline).
+This is a typescript re-implement for [obsidian-task-timeline-view](https://github.com/702573N/obsidian-task-timeline-view).
 
 In this repo, the `view.js` which originally handles:
 1. task item parsing
