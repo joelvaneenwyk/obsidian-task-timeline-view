@@ -150,16 +150,16 @@ class QuickEntry extends React.Component<Record<string, unknown>, QuickEntryStat
         if (newTask.includes("recurring ")) { input.value = newTask.replace("recurring", recurrenceSymbol) }
 
         // Dates
-        if (newTask.includes("today ")) { input.value = newTask.replace("today", moment().format("YYYY-MM-DD")) }
-        if (newTask.includes("tomorrow ")) { input.value = newTask.replace("tomorrow", moment().add(1, "days").format("YYYY-MM-DD")) }
-        if (newTask.includes("yesterday ")) { input.value = newTask.replace("yesterday", moment().subtract(1, "days").format("YYYY-MM-DD")) }
+        if (newTask.includes("today ")) { input.value = newTask.replace("today", moment().format("yyyy-MM-dd")) }
+        if (newTask.includes("tomorrow ")) { input.value = newTask.replace("tomorrow", moment().add(1, "days").format("yyyy-MM-dd")) }
+        if (newTask.includes("yesterday ")) { input.value = newTask.replace("yesterday", moment().subtract(1, "days").format("yyyy-MM-dd")) }
 
         // In X days/weeks/month/years
         const futureDate = newTask.match(/(in)\W(\d{1,3})\W(days|day|weeks|week|month|years|year) /);
         if (futureDate && futureDate.length > 3) {
             const value: number = parseInt(futureDate[2]);
             const unit = futureDate[3] as moment.unitOfTime.Base;
-            const date = moment().add(value, unit).format("YYYY-MM-DD[ ]")
+            const date = moment().add(value, unit).format("yyyy-MM-dd[ ]")
             input.value = newTask.replace(futureDate[0], date);
         }
 
@@ -169,9 +169,9 @@ class QuickEntry extends React.Component<Record<string, unknown>, QuickEntryStat
             const weekdays = ["", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
             const dayINeed = weekdays.indexOf(weekday[1]);
             if (moment().isoWeekday() < dayINeed) {
-                input.value = newTask.replace(weekday[1], moment().isoWeekday(dayINeed).format("YYYY-MM-DD"));
+                input.value = newTask.replace(weekday[1], moment().isoWeekday(dayINeed).format("yyyy-MM-dd"));
             } else {
-                input.value = newTask.replace(weekday[1], moment().add(1, 'weeks').isoWeekday(dayINeed).format("YYYY-MM-DD"));
+                input.value = newTask.replace(weekday[1], moment().add(1, 'weeks').isoWeekday(dayINeed).format("yyyy-MM-dd"));
             }
         }
 
